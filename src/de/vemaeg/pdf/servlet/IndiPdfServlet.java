@@ -1,33 +1,28 @@
 package de.vemaeg.pdf.servlet;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
-
-import com.lowagie.text.DocumentException;
+//import org.apache.log4j.Logger;
 
 import de.vemaeg.pdf.IndiPdfCreator;
-import de.vemaeg.pdf.PdfCreator;
 import de.vemaeg.pdf.PdfException;
-//import de.vemaeg.util.VelocityRenderer;
 
 public class IndiPdfServlet extends HttpServlet {
 	
 	private static final long serialVersionUID = -251049936448814025L;
-	private static final Logger LOGGER = Logger.getLogger(IndiPdfServlet.class);	
+	//private static final Logger LOGGER = Logger.getLogger(IndiPdfServlet.class);	
 
 	private static class RequestData {
 		// input
 		public Integer pdfId = null;	
 		public Integer vorlId = null;	
+		public String UIN = null;
+		public String kdCode = null;
 	}
 
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -47,7 +42,7 @@ public class IndiPdfServlet extends HttpServlet {
 		if (data.pdfId != null) {			
 			try {
 				setRespHeaders(response, data);
-				IndiPdfCreator.createPDF(response.getOutputStream(), data.pdfId);
+				IndiPdfCreator.createPDF(response.getOutputStream(), data.pdfId, data.UIN, data.kdCode);
 			} catch (PdfException e) {
 				response.reset();
 				response.getWriter().print(e.getMessage());
@@ -88,6 +83,9 @@ public class IndiPdfServlet extends HttpServlet {
 		if (tmp != null) {
 			data.vorlId = Integer.parseInt(tmp);
 		}
+		
+		data.UIN = request.getParameter("UIN");
+		data.kdCode = request.getParameter("kdCode");
 		
 		return data;
 	}

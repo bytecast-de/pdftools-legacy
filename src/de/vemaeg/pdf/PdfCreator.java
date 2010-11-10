@@ -230,14 +230,14 @@ public class PdfCreator {
 		outputStream.close();
 	}
 	
-	public static void pdfOverlayMulti(InputStream base, Map<String, InputStream> overlays, OutputStream outputStream) throws IOException, DocumentException {
+	public static void pdfOverlayMulti(InputStream base, Map<InputStream, String> overlays, OutputStream outputStream) throws IOException, DocumentException {
 		Document document = new Document();
 		PdfWriter writer = PdfWriter.getInstance(document, outputStream);
 		document.open();	
 		
 		PdfReader baseReader = new PdfReader(base);
 		int numPages = baseReader.getNumberOfPages();		
-		
+
 		// overlay vorbereiten...
 		class Overlay {
 			public Overlay(int page, PdfReader reader) {
@@ -253,15 +253,20 @@ public class PdfCreator {
 			pageMap.put(i, new ArrayList<Overlay>());
 		}
 		
-		for(String seiten : overlays.keySet()) {
-			InputStream content = overlays.get(seiten);
-			PdfReader overlayReader = new PdfReader(content);			
+		for(InputStream content : overlays.keySet()) {
+			String seiten = overlays.get(content);
+			PdfReader overlayReader = new PdfReader(content);	
+			int overPages = overlayReader.getNumberOfPages();
 			
 			// alle Seiten
 			if (seiten.compareToIgnoreCase("alle") == 0) {
 				for (int i = 1; i <= numPages; ++i) {
 					List<Overlay> l = pageMap.get(i);
-					l.add(new Overlay(i, overlayReader));
+					int overPage = i % overPages;
+					if (overPage == 0) {
+						overPage = overPages;
+					}
+					l.add(new Overlay(overPage, overlayReader));
 				}
 				continue;
 			} 
@@ -296,17 +301,19 @@ public class PdfCreator {
 			
 			// overlays
 			for(Overlay over : pageMap.get(i)) {
-				if (over.page <= over.reader.getNumberOfPages()) {
-					PdfImportedPage overPage = writer.getImportedPage(over.reader, over.page);
-					cbDirect.addTemplate(overPage, 0, 0);
+				if (over.page > over.reader.getNumberOfPages()) {
+					LOGGER.error("overlay page out of range: " + over.page);
+					continue;
 				}
+				
+				PdfImportedPage overPage = writer.getImportedPage(over.reader, over.page);
+				cbDirect.addTemplate(overPage, 0, 0);
 			}			
 		}
 
 		outputStream.flush();
 		document.close();
-		outputStream.close();
-		
+		outputStream.close();		
 	}
 	
 	/*

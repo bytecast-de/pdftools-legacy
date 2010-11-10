@@ -41,13 +41,14 @@
         <!-- auto update tables -->
  <!-- 
          <property name="hibernate.hbm2ddl.auto">update</property>
-                  -->  
          <property name="show_sql">true</property>
+                           -->  
                
         
 		<!-- Enable Hibernate's automatic session context management -->
    		<property name="current_session_context_class">thread</property>
    		
+   		<mapping resource="de/vemaeg/common/db/model/Sitzung.hbm.xml"/>
    		<mapping resource="de/vemaeg/common/db/model/Kunde.hbm.xml"/>
    		<mapping resource="de/vemaeg/common/db/model/Mitglied.hbm.xml"/>
    		<mapping resource="de/vemaeg/common/db/model/Mitarbeiter.hbm.xml"/>

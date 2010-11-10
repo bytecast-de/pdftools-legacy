@@ -13,10 +13,19 @@
   	<servlet>
       <servlet-name>IndiPdfServlet</servlet-name>
       <servlet-class>de.vemaeg.pdf.servlet.IndiPdfServlet</servlet-class>    
-    </servlet>  
-    
+    </servlet>      
    <servlet-mapping>
       <servlet-name>IndiPdfServlet</servlet-name>
       <url-pattern>/IndiPdfServlet</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+    <servlet-name>MacroServlet</servlet-name>
+      <servlet-class>de.vemaeg.pdf.servlet.MacroServlet</servlet-class>    
+    </servlet>  
+    
+   <servlet-mapping>
+      <servlet-name>MacroServlet</servlet-name>
+      <url-pattern>/MacroServlet</url-pattern>
     </servlet-mapping>
 </web-app>

@@ -41,6 +41,11 @@ public class VelocityRenderer {
 			ve.setProperty(Velocity.FILE_RESOURCE_LOADER_PATH, fileLoaderPath);
 		}
 		
+		/*
+		ve.setProperty("layout.template.cache.enabled", "false");
+		ve.setProperty(Velocity.VM_LIBRARY_AUTORELOAD, "true");		
+		*/
+		
         try {        	
         	ve.init();			
 		} catch (Exception e) {
@@ -49,10 +54,18 @@ public class VelocityRenderer {
 	}
 	
 	public static VelocityRenderer getInstance() {
+		return getInstance(null);
+	}
+	
+	public static VelocityRenderer getInstance(String fileLoaderPath) {
+		// FIXME: caching v. Makros...
+		return new VelocityRenderer(fileLoaderPath);
+		/*
 		if (instance == null) {
-			instance = new VelocityRenderer();
+			instance = new VelocityRenderer(fileLoaderPath);
 		}
 		return instance;
+		*/
 	}
 	
 	public String renderTemplate(File f, Map<String, Object> daten, boolean preProcess) {
