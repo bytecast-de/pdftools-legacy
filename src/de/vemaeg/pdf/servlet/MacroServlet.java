@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.velocity.exception.ParseErrorException;
 
-import de.vemaeg.util.VelocityRenderer;
+import de.vemaeg.common.util.VelocityRenderer;
 
 public class MacroServlet extends HttpServlet {
 	
@@ -44,7 +44,7 @@ public class MacroServlet extends HttpServlet {
 			// teste makro inhalt
 			if (data.content != null) {
 				try {
-					VelocityRenderer.getInstance().renderTemplate(data.content, null, false);
+					VelocityRenderer.getInstance("").renderTemplate(data.content, null, false);
 				} catch(ParseErrorException e) {
 					response.getWriter().print("Fehler im Makro: " + e.getMessage());
 					return;

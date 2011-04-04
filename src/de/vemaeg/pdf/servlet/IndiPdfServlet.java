@@ -91,7 +91,7 @@ public class IndiPdfServlet extends HttpServlet {
 	}
 	
 	private String createFilename(RequestData data) {
-		String filename = "test.pdf";
+		String filename = "test";
 		return filename;
 	}
 

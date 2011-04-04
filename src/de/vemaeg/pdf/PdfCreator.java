@@ -129,6 +129,7 @@ public class PdfCreator {
         resolver.addFont(fontPath + "HelveticaNeueLTStd-LtCn.otf", true);
         resolver.addFont(fontPath + "HelveticaNeueLTStd-LtCnO.otf", true);
         resolver.addFont(fontPath + "HelveticaNeueLTStd-MdCn.otf", true);
+        resolver.addFont(fontPath + "HelveticaNeueLTStd-MdCnO.otf", true);
         resolver.addFont(fontPath + "HelveticaNeueLTStd-UltLt.otf", true);
 	}
 	

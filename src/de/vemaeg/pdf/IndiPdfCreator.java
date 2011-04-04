@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 import org.apache.velocity.exception.MethodInvocationException;
 import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.ResourceNotFoundException;
+import org.hibernate.Hibernate;
 import org.hibernate.Session;
 
 import com.lowagie.text.DocumentException;
@@ -33,7 +34,7 @@ import de.vemaeg.common.db.model.Mitglied;
 import de.vemaeg.common.db.model.Sitzung;
 import de.vemaeg.common.db.model.Versicherer;
 import de.vemaeg.common.util.GlobalConfig;
-import de.vemaeg.util.VelocityRenderer;
+import de.vemaeg.common.util.VelocityRenderer;
 
 public class IndiPdfCreator {
 	
@@ -78,7 +79,7 @@ public class IndiPdfCreator {
 			LOGGER.error(e.getMessage());
 			throw new PdfException("Fehler bei Dokumenten-Erzeugung, PDF ID " + pdfId);		
 		} catch (RuntimeException ex) {
-			ex.printStackTrace();
+			//ex.printStackTrace();
 			HibernateUtil.handleException(s, ex, true);
 		} finally {
 			HibernateUtil.closeSession(s);
@@ -142,21 +143,36 @@ public class IndiPdfCreator {
 			return context;
 		}
 		
+		try {
+			Hibernate.initialize(sitzung);
+		} catch (org.hibernate.ObjectNotFoundException e) {
+			LOGGER.warn("Indi PDF: Ungültige UIN " + UIN);
+			return context;
+		}
+		
 		// Makler
 		Mitglied mit = sitzung.getMitglied();
-		context.put("makler", mit);
+		context.put("makler", mit);		
 		
 		// Mitarbeiter
 		Mitarbeiter arb = sitzung.getMitarbeiter();
 		if (arb != null) {
 			context.put("mitarb", arb);
-		}				
+		}
 		
 		// Kunde
 		if (kdCode != null) {
 			KundeDAO kDao = daoFactory.getKundeDAO();
 			Kunde kd = kDao.findByCode(kdCode);
-			context.put("kunde", kd);
+			if (kd != null) {
+				context.put("kunde", kd);
+				
+				// Ansprechpartner
+				Mitarbeiter ansp = kd.getMitarbeiter();
+				if (ansp != null) {
+					context.put("ansprechp", ansp);
+				}
+			}
 		}
 		
 		//Versicherer vr = (Versicherer) s.load(Versicherer.class, 23);
@@ -177,6 +193,7 @@ public class IndiPdfCreator {
 		Map<String, Object> context = new HashMap<String, Object>();
 		context.put("makler", mit);
 		context.put("mitarb", arb);
+		context.put("ansprechp", arb);
 		context.put("vr", vr);
 		context.put("kunde", kd);
 		
