@@ -175,6 +175,9 @@ public class IndiPdfCreator {
 			}
 		}
 		
+		// dynamisches Resizing
+		context.put("imgTag", new ImageTag(mit));
+		
 		//Versicherer vr = (Versicherer) s.load(Versicherer.class, 23);
 		//context.put("vr", vr);		
 		
@@ -196,6 +199,9 @@ public class IndiPdfCreator {
 		context.put("ansprechp", arb);
 		context.put("vr", vr);
 		context.put("kunde", kd);
+		
+		// dynamisches Resizing
+		context.put("imgTag", new ImageTag(mit));
 		
 		return context;
 	}
