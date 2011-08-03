@@ -21,7 +21,11 @@ public class ImageTag {
 	
 	public String resize(String url, int maxWidth, int maxHeight) {	
 		if (url.compareToIgnoreCase("logo") == 0) {
-			url = LOGO_BASE_URL + mitglied.getLogoStripped();
+			if (mitglied.getLogoStripped() != null) {
+				url = LOGO_BASE_URL + mitglied.getLogoStripped();
+			} else {				
+				return "src=\"\"";				
+			}
 		}
 		
 		String dim = getImageDimensions(url, maxWidth, maxHeight);
