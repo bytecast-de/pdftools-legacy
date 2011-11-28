@@ -42,7 +42,7 @@ public class IndiPdfCreator {
 	private static final String DIRNAME_INDIPDF = GlobalConfig.getInstance().getString("dirname.indipdf");
 	private static final String FILENAME_MACROS = GlobalConfig.getInstance().getString("filename.macros");
 	
-	public static void createPDF(OutputStream outStream, Integer pdfId, String UIN, String kdCode) throws PdfException {
+	public static void createPDF(OutputStream outStream, Integer pdfId, String UIN, String kdCode, Object daten) throws PdfException {
 		if (pdfId == null || pdfId <= 0) {
 			throw new PdfException("Ungueltige PDF ID " + pdfId);
 		}
@@ -59,6 +59,9 @@ public class IndiPdfCreator {
 				context = createVelocityTestContext(s);
 			} else {
 				context = createVelocityContext(s, UIN, kdCode);
+			}
+			if (daten != null) {
+			    context.put("daten", daten);
 			}
 			
 			// 1. "Briefpapier" erzeugen
@@ -87,7 +90,7 @@ public class IndiPdfCreator {
 	}
 
 	
-	public static void createVorlagenPDF(OutputStream outStream, Integer vorlId) throws PdfException {
+	public static void createVorlagenPDF(OutputStream outStream, Integer vorlId, Object daten) throws PdfException {
 		
 		Session s = HibernateUtil.getSession();
 		try {
@@ -95,7 +98,10 @@ public class IndiPdfCreator {
 
 			IndiPDFVorlage vorlPdf = (IndiPDFVorlage) s.load(IndiPDFVorlage.class, vorlId);	
 			
-			Map<String, Object> context = createVelocityTestContext(s);			
+			Map<String, Object> context = createVelocityTestContext(s);	
+			if (daten != null) {
+			    context.put("daten", daten);
+			}
 			createVorlagenPDF(outStream, vorlPdf, context);
 			
 			s.getTransaction().commit();
@@ -125,7 +131,11 @@ public class IndiPdfCreator {
 		}
 		
 		// template durch velocity jagen
-		content = VelocityRenderer.getInstance(DIRNAME_INDIPDF).renderTemplate(content, context, false);
+		try {
+		    content = VelocityRenderer.getInstance(DIRNAME_INDIPDF).renderTemplate(content, context, false);
+		} catch (Exception e) {
+		    content = "FEHLER: " + e.getMessage();
+		}
 		
 		PdfCreator.create(out, content, null);
 		return true;

@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-//import org.apache.log4j.Logger;
+import org.codehaus.jackson.map.ObjectMapper;
 
 import de.vemaeg.pdf.IndiPdfCreator;
 import de.vemaeg.pdf.PdfException;
@@ -23,6 +23,7 @@ public class IndiPdfServlet extends HttpServlet {
 		public Integer vorlId = null;	
 		public String UIN = null;
 		public String kdCode = null;
+		public Object daten = null;
 	}
 
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -36,13 +37,19 @@ public class IndiPdfServlet extends HttpServlet {
 	}
 	
 	protected void doGetOrPost(HttpServletRequest request, HttpServletResponse response)
-	throws ServletException, IOException {	
-		RequestData data = parseRequest(request);
+	throws ServletException, IOException {
+	    RequestData data = null;
+	    try {
+	        data = parseRequest(request);
+	    } catch (Exception e) {
+	        response.getWriter().print(e.getMessage());
+	        return;
+	    }
 		
 		if (data.pdfId != null) {			
 			try {
 				setRespHeaders(response, data);
-				IndiPdfCreator.createPDF(response.getOutputStream(), data.pdfId, data.UIN, data.kdCode);
+				IndiPdfCreator.createPDF(response.getOutputStream(), data.pdfId, data.UIN, data.kdCode, data.daten);
 			} catch (PdfException e) {
 				response.reset();
 				response.getWriter().print(e.getMessage());
@@ -53,7 +60,7 @@ public class IndiPdfServlet extends HttpServlet {
 		if (data.vorlId != null) {
 			try {
 				setRespHeaders(response, data);
-				IndiPdfCreator.createVorlagenPDF(response.getOutputStream(), data.vorlId);
+				IndiPdfCreator.createVorlagenPDF(response.getOutputStream(), data.vorlId, data.daten);
 			} catch (PdfException e) {
 				response.reset();
 				response.getWriter().print(e.getMessage());
@@ -71,7 +78,7 @@ public class IndiPdfServlet extends HttpServlet {
 	    response.addHeader("Content-Disposition", "inline; filename=" + createFilename(data) + ".pdf");
 	}
 	
-	private RequestData parseRequest(HttpServletRequest request) {
+	private RequestData parseRequest(HttpServletRequest request) throws Exception {
 		RequestData data = new RequestData();	
 		
 		String tmp = request.getParameter("pdfId");
@@ -86,6 +93,11 @@ public class IndiPdfServlet extends HttpServlet {
 		
 		data.UIN = request.getParameter("UIN");
 		data.kdCode = request.getParameter("kdCode");
+		tmp = request.getParameter("daten");
+		if (tmp != null) {		    
+		    ObjectMapper mapper = new ObjectMapper();
+            data.daten = mapper.readValue(tmp, Object.class);
+		}
 		
 		return data;
 	}
