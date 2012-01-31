@@ -231,13 +231,17 @@ public class PdfCreator {
 		outputStream.close();
 	}
 	
-	public static void pdfOverlayMulti(InputStream base, Map<InputStream, String> overlays, OutputStream outputStream) throws IOException, DocumentException {
+	public static void pdfOverlayMulti(InputStream base, Map<InputStream, String> overlays, OutputStream outputStream) throws IOException, DocumentException, PdfException {
 		Document document = new Document();
 		PdfWriter writer = PdfWriter.getInstance(document, outputStream);
 		document.open();	
 		
-		PdfReader baseReader = new PdfReader(base);
-		int numPages = baseReader.getNumberOfPages();		
+		PdfReader baseReader = null;
+		int numPages = 0;
+		if (base != null) {
+			baseReader = new PdfReader(base);
+			numPages = baseReader.getNumberOfPages();
+		}
 
 		// overlay vorbereiten...
 		class Overlay {
@@ -250,9 +254,6 @@ public class PdfCreator {
 		};
 		
 		Map<Integer, List<Overlay>> pageMap = new HashMap<Integer, List<Overlay>>();
-		for (int i = 1; i <= numPages; ++i) {
-			pageMap.put(i, new ArrayList<Overlay>());
-		}
 		
 		for(InputStream content : overlays.keySet()) {
 			String seiten = overlays.get(content);
@@ -261,8 +262,16 @@ public class PdfCreator {
 			
 			// alle Seiten
 			if (seiten.compareToIgnoreCase("alle") == 0) {
+				if (overPages > numPages) {
+					numPages = overPages;
+				}
+				
 				for (int i = 1; i <= numPages; ++i) {
 					List<Overlay> l = pageMap.get(i);
+					if (l == null) {
+						pageMap.put(i, new ArrayList<Overlay>());
+						l = pageMap.get(i);
+					}
 					int overPage = i % overPages;
 					if (overPage == 0) {
 						overPage = overPages;
@@ -279,33 +288,50 @@ public class PdfCreator {
 			int to = from;
 			if (tmp.length == 2) {
 				to =  Integer.parseInt(tmp[1]);
-			} 
-			if (to > numPages) {
-				to = numPages;
+			}
+
+			int max = to + (overPages-1);
+			if (max > numPages) {
+				numPages = max;
 			}
 			
-			int j = 1;
 			for (int i = from; i <= to; ++i) {
-				List<Overlay> l = pageMap.get(i);
-				l.add(new Overlay(j++, overlayReader));
+				for (int j = 0; j < overPages; ++j) {
+					List<Overlay> l = pageMap.get(i+j);
+					if (l == null) {
+						pageMap.put(i+j, new ArrayList<Overlay>());
+						l = pageMap.get(i+j);
+					}
+					l.add(new Overlay(j+1, overlayReader));
+				}
 			}
 		}
-
 		
-		for (int i = 1; i <= numPages; ++i) {
-			document.newPage();
-			
+		if (numPages == 0) {
+			throw new PdfException("Fehler: Dokument hat keine Seiten! ");	
+		}
+		
+		for (int i = 1; i <= numPages; ++i) {			
+			if (i > 1) {  // erste Seite ist bereits vorhanden!
+				writer.setPageEmpty(false);  // <- leere Seiten NICHT ignorieren!
+				document.newPage();
+			}
+
 			PdfContentByte cbDirect = writer.getDirectContent(); 
 			
-			PdfImportedPage basePage = writer.getImportedPage(baseReader, i);
-			cbDirect.addTemplate(basePage, 0, 0);
+			if (baseReader != null) {
+				PdfImportedPage basePage = writer.getImportedPage(baseReader, i);
+				cbDirect.addTemplate(basePage, 0, 0);
+			}
 			
 			// overlays
-			for(Overlay over : pageMap.get(i)) {
+			List<Overlay> overs = pageMap.get(i);
+			if (overs == null) continue;			
+			for(Overlay over : overs) {				
 				if (over.page > over.reader.getNumberOfPages()) {
 					LOGGER.error("overlay page out of range: " + over.page);
 					continue;
-				}
+				}				
 				
 				PdfImportedPage overPage = writer.getImportedPage(over.reader, over.page);
 				cbDirect.addTemplate(overPage, 0, 0);

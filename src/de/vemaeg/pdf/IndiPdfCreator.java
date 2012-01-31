@@ -8,6 +8,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -42,7 +44,7 @@ public class IndiPdfCreator {
 	private static final String DIRNAME_INDIPDF = GlobalConfig.getInstance().getString("dirname.indipdf");
 	private static final String FILENAME_MACROS = GlobalConfig.getInstance().getString("filename.macros");
 	
-	public static void createPDF(OutputStream outStream, Integer pdfId, String UIN, String kdCode, Object daten) throws PdfException {
+	public static void createPDF(OutputStream outStream, Integer pdfId, String UIN, String kdCode, Object daten, String editorText) throws PdfException {
 		if (pdfId == null || pdfId <= 0) {
 			throw new PdfException("Ungueltige PDF ID " + pdfId);
 		}
@@ -62,6 +64,9 @@ public class IndiPdfCreator {
 			}
 			if (daten != null) {
 			    context.put("daten", daten);
+			}
+			if (editorText != null) {
+				context.put("editorText", editorText);	
 			}
 			
 			// 1. "Briefpapier" erzeugen
@@ -188,10 +193,17 @@ public class IndiPdfCreator {
 		// dynamisches Resizing
 		context.put("imgTag", new ImageTag(mit));
 		
+		context.put("util", IndiPdfCreator.class);
+		
 		//Versicherer vr = (Versicherer) s.load(Versicherer.class, 23);
 		//context.put("vr", vr);		
 		
 		return context;
+	}
+	
+	public static String heute() { // NO_UCD
+		SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
+		return format.format(new Date());
 	}
 	
 	private static Map<String, Object> createVelocityTestContext(Session s) {
@@ -241,8 +253,16 @@ public class IndiPdfCreator {
 	}
 	
 	private static InputStream getTemplatePDF(IndiPDF indiPdf) throws FileNotFoundException {
+		if (indiPdf.getDatei() == null || indiPdf.getDatei().length() == 0) {
+			return null; 
+		}
+		
 		String fPath = String.format("%s/%s", DIRNAME_INDIPDF, indiPdf.getDatei()); 
 		File f = new File(fPath);
+		if (f == null) {
+			return null;
+		}
+		
 		InputStream pdfTemplate = new FileInputStream(f);		
 		return pdfTemplate;
 	}

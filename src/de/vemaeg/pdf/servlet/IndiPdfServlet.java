@@ -24,6 +24,7 @@ public class IndiPdfServlet extends HttpServlet {
 		public String UIN = null;
 		public String kdCode = null;
 		public Object daten = null;
+		public String editor = null;
 	}
 
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -49,7 +50,7 @@ public class IndiPdfServlet extends HttpServlet {
 		if (data.pdfId != null) {			
 			try {
 				setRespHeaders(response, data);
-				IndiPdfCreator.createPDF(response.getOutputStream(), data.pdfId, data.UIN, data.kdCode, data.daten);
+				IndiPdfCreator.createPDF(response.getOutputStream(), data.pdfId, data.UIN, data.kdCode, data.daten, data.editor);
 			} catch (PdfException e) {
 				response.reset();
 				response.getWriter().print(e.getMessage());
@@ -93,8 +94,10 @@ public class IndiPdfServlet extends HttpServlet {
 		
 		data.UIN = request.getParameter("UIN");
 		data.kdCode = request.getParameter("kdCode");
+		data.editor = request.getParameter("editor");
+		
 		tmp = request.getParameter("daten");
-		if (tmp != null) {		    
+		if (tmp != null && tmp.trim().length() > 0) {		    
 		    ObjectMapper mapper = new ObjectMapper();
             data.daten = mapper.readValue(tmp, Object.class);
 		}
