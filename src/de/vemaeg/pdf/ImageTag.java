@@ -6,7 +6,10 @@ import java.net.URL;
 import javax.imageio.ImageIO;
 
 import org.apache.log4j.Logger;
+import org.hibernate.Hibernate;
 
+import de.vemaeg.common.db.dao.DAOFactory;
+import de.vemaeg.common.db.dao.MitgliedDAO;
 import de.vemaeg.common.db.model.Mitglied;
 
 public class ImageTag {
@@ -31,7 +34,60 @@ public class ImageTag {
 		String dim = getImageDimensions(url, maxWidth, maxHeight);
 		
 		return String.format("src=\"%s\" %s ", url, dim);
-	}	
+	}
+	
+	/**
+	 * Läd Logo-URL eines Maklers für resizing
+	 * 
+	 * @param mitId
+	 * @param maxWidth
+	 * @param maxHeight
+	 * @return
+	 */
+	public String resizeLogo(int mitId, int maxWidth, int maxHeight) {
+	    Mitglied m = loadMitglied(mitId);
+	    if (m == null) {
+	        return "src=\"\"";
+	    }
+	    
+	    String url = LOGO_BASE_URL + m.getLogoStripped();
+	    String dim = getImageDimensions(url, maxWidth, maxHeight);
+	    return String.format("src=\"%s\" %s ", url, dim);
+	}
+	
+	/**
+	 * Initialisiere Mitglied
+	 * Wichtig: Session ist offen!
+	 * 
+	 * @param mitId
+	 * @return
+	 */
+	private Mitglied loadMitglied(int mitId) {
+	    if (mitId <= 0) return null;
+
+	    Mitglied m = null;
+//	    Session s = HibernateUtil.getSession();
+//	    try {
+//	        session.beginTransaction();   
+
+	        DAOFactory daoFactory = DAOFactory.instance(DAOFactory.HIBERNATE);
+	        MitgliedDAO mDao = daoFactory.getMitgliedDAO();
+	        m = mDao.findById(mitId, false);
+	        Hibernate.initialize(m);
+
+//	        session.getTransaction().commit();
+//	    } catch (org.hibernate.ObjectNotFoundException e) {
+//	        m = null;
+//	    } catch (RuntimeException ex) {
+//	        ex.printStackTrace();
+//	        m = null;
+//	        HibernateUtil.handleException(session, ex, true);
+////	    } finally {
+////	        HibernateUtil.closeSession(s);
+//	    }  
+
+	    return m;    
+	}
 
 	/**
 	 * ermittelt die verkleinerten Abmessungen eines Bilds unter der gegebenen URL
