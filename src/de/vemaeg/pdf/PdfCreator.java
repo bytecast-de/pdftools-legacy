@@ -26,6 +26,7 @@ import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Image;
 import com.lowagie.text.PageSize;
+import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfImportedPage;
@@ -141,7 +142,6 @@ public class PdfCreator {
 		try {
 			List<InputStream> pdfs = streamOfPDFFiles;
 			List<PdfReader> readers = new ArrayList<PdfReader>();
-			int totalPages = 0;
 			Iterator<InputStream> iteratorPDFs = pdfs.iterator();
 
 			// Create Readers for the pdfs.
@@ -150,7 +150,6 @@ public class PdfCreator {
 				PdfReader pdfReader = new PdfReader(pdf);
 				//pdfReader.removeUsageRights();
 				readers.add(pdfReader);
-				totalPages += pdfReader.getNumberOfPages();
 			}
 			
 			// Create a writer for the outputstream
@@ -161,7 +160,6 @@ public class PdfCreator {
 			PdfContentByte cb = writer.getDirectContent(); 
 
 			PdfImportedPage page;
-			int currentPageNumber = 0;
 			int pageOfCurrentReaderPDF = 0;
 			Iterator<PdfReader> iteratorPDFReader = readers.iterator();
 
@@ -174,8 +172,7 @@ public class PdfCreator {
 					while (pageOfCurrentReaderPDF < pdfReader.getNumberOfPages()) {
 						document.newPage();
 						pageOfCurrentReaderPDF++;
-						page = writer.getImportedPage(pdfReader, pageOfCurrentReaderPDF);
-						currentPageNumber++;						
+						page = writer.getImportedPage(pdfReader, pageOfCurrentReaderPDF);						
 						cb.addTemplate(page, 0, 0);
 					}
 				} catch (IllegalArgumentException e) {
@@ -232,10 +229,8 @@ public class PdfCreator {
 	}
 	
 	public static void pdfOverlayMulti(InputStream base, Map<InputStream, String> overlays, OutputStream outputStream) throws IOException, DocumentException, PdfException {
-		Document document = new Document();
-		PdfWriter writer = PdfWriter.getInstance(document, outputStream);
-		document.open();	
 		
+		// optionale Basis-Seite
 		PdfReader baseReader = null;
 		int numPages = 0;
 		if (base != null) {
@@ -311,16 +306,17 @@ public class PdfCreator {
 			throw new PdfException("Fehler: Dokument hat keine Seiten! ");	
 		}
 		
+		Document document = new Document();		
+		PdfWriter writer = PdfWriter.getInstance(document, outputStream);			
 		for (int i = 1; i <= numPages; ++i) {			
-			if (i > 1) {  // erste Seite ist bereits vorhanden!
+			if (i > 1) {
 				writer.setPageEmpty(false);  // <- leere Seiten NICHT ignorieren!
-				document.newPage();
-			}
-
-			PdfContentByte cbDirect = writer.getDirectContent(); 
+			}			
 			
-			if (baseReader != null) {
-				PdfImportedPage basePage = writer.getImportedPage(baseReader, i);
+			if (baseReader != null) {							
+				ensurePageExists(document, i, baseReader, i);
+				PdfContentByte cbDirect = writer.getDirectContent(); 
+				PdfImportedPage basePage = writer.getImportedPage(baseReader, i);	
 				cbDirect.addTemplate(basePage, 0, 0);
 			}
 			
@@ -331,9 +327,11 @@ public class PdfCreator {
 				if (over.page > over.reader.getNumberOfPages()) {
 					LOGGER.error("overlay page out of range: " + over.page);
 					continue;
-				}				
+				}
 				
+				ensurePageExists(document, i, over.reader, over.page);
 				PdfImportedPage overPage = writer.getImportedPage(over.reader, over.page);
+				PdfContentByte cbDirect = writer.getDirectContent(); 
 				cbDirect.addTemplate(overPage, 0, 0);
 			}			
 		}
@@ -341,6 +339,31 @@ public class PdfCreator {
 		outputStream.flush();
 		document.close();
 		outputStream.close();		
+	}
+	
+	private static void ensurePageExists(Document document, int pageNum, PdfReader reader, int readerPageNum) {
+		// Seite bereits vorhanden?
+		if (pageNum == 1 && document.isOpen()) return;
+		if (pageNum > 1 && document.getPageNumber() == pageNum) return;
+		
+		// Seitenformat
+		Rectangle rec = reader.getPageSize(readerPageNum);
+		if (rec.getHeight() < rec.getWidth()) {
+			//System.err.println("FORMAT: quer ");
+			document.setPageSize(PageSize.A4.rotate());
+		} else {
+			//System.err.println("FORMAT: hoch ");
+			document.setPageSize(PageSize.A4);
+		}
+		
+		if (pageNum == 1) {
+			// erzeugt gleichzeitig 1. Seite
+			document.open();
+		}
+	
+		if (pageNum > 1) {
+			document.newPage();
+		}
 	}
 	
 	/*
