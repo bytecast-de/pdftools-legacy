@@ -245,7 +245,7 @@ public class PdfCreator {
 				this.reader = reader;
 			}
 			public int page;
-			public PdfReader reader;			
+			public PdfReader reader;
 		};
 		
 		Map<Integer, List<Overlay>> pageMap = new HashMap<Integer, List<Overlay>>();
@@ -307,14 +307,16 @@ public class PdfCreator {
 		}
 		
 		Document document = new Document();		
-		PdfWriter writer = PdfWriter.getInstance(document, outputStream);			
+		PdfWriter writer = PdfWriter.getInstance(document, outputStream);		
 		for (int i = 1; i <= numPages; ++i) {			
 			if (i > 1) {
-				writer.setPageEmpty(false);  // <- leere Seiten NICHT ignorieren!
-			}			
+				writer.setPageEmpty(false);  // <- leere Seiten NICHT ignorieren!				
+			}	
 			
+			boolean pageExists = false;
 			if (baseReader != null) {							
 				ensurePageExists(document, i, baseReader, i);
+				pageExists = true;
 				PdfContentByte cbDirect = writer.getDirectContent(); 
 				PdfImportedPage basePage = writer.getImportedPage(baseReader, i);	
 				cbDirect.addTemplate(basePage, 0, 0);
@@ -329,7 +331,10 @@ public class PdfCreator {
 					continue;
 				}
 				
-				ensurePageExists(document, i, over.reader, over.page);
+				if (!pageExists) {
+					ensurePageExists(document, i, over.reader, over.page);
+					pageExists = true;
+				}
 				PdfImportedPage overPage = writer.getImportedPage(over.reader, over.page);
 				PdfContentByte cbDirect = writer.getDirectContent(); 
 				cbDirect.addTemplate(overPage, 0, 0);
@@ -341,11 +346,7 @@ public class PdfCreator {
 		outputStream.close();		
 	}
 	
-	private static void ensurePageExists(Document document, int pageNum, PdfReader reader, int readerPageNum) {
-		// Seite bereits vorhanden?
-		if (pageNum == 1 && document.isOpen()) return;
-		if (pageNum > 1 && document.getPageNumber() == pageNum) return;
-		
+	private static void ensurePageExists(Document document, int pageNum, PdfReader reader, int readerPageNum) {		
 		// Seitenformat
 		Rectangle rec = reader.getPageSize(readerPageNum);
 		if (rec.getHeight() < rec.getWidth()) {
@@ -359,9 +360,7 @@ public class PdfCreator {
 		if (pageNum == 1) {
 			// erzeugt gleichzeitig 1. Seite
 			document.open();
-		}
-	
-		if (pageNum > 1) {
+		} else {	
 			document.newPage();
 		}
 	}

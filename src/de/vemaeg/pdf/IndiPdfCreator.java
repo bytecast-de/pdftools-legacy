@@ -224,6 +224,7 @@ public class IndiPdfCreator {
 		
 		// dynamisches Resizing
 		context.put("imgTag", new ImageTag(mit));
+		context.put("util", IndiPdfCreator.class);
 		
 		return context;
 	}
@@ -259,9 +260,6 @@ public class IndiPdfCreator {
 		
 		String fPath = String.format("%s/%s", DIRNAME_INDIPDF, indiPdf.getDatei()); 
 		File f = new File(fPath);
-		if (f == null) {
-			return null;
-		}
 		
 		InputStream pdfTemplate = new FileInputStream(f);		
 		return pdfTemplate;
