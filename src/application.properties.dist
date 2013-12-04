@@ -1,0 +1,10 @@
+#=================================
+# globale Konfiguration
+#=================================
+
+dirname.fonts = F:/work/VEMA/vema_tarifrechner/WebContent/pdfTemplates/fonts/
+dirname.indipdf = F:/work/files/indipdf/
+
+filename.macros = 00000_makros.vm
+
+

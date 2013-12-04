@@ -1,14 +1,20 @@
 package de.vemaeg.pdf;
 
 import java.awt.Color;
-import java.io.ByteArrayOutputStream;
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.net.CookieHandler;
+import java.net.CookieManager;
+import java.net.CookiePolicy;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -40,47 +46,122 @@ public class PdfCreator {
 	
 	private static final Logger LOGGER = Logger.getLogger(PdfCreator.class);
 	
-	private static final String DIRNAME_FONTS = GlobalConfig.getInstance().getString("dirname.fonts");
+	private static final String DIRNAME_FONTS = GlobalConfig.getInstance().getString("dirname.fonts");	
 	
-	/*
-	 *  erzeugt pdf aus vorlage + externem header -> stamper
-	 */
-	public static void create(String uri, String sessionId, InputStream header, OutputStream output) throws IOException, DocumentException {    
+	public static void createFromInternalUri(OutputStream output, String uri, String UIN) throws IOException, DocumentException {  
 		// init
         ITextRenderer renderer = new ITextRenderer();
 		initFonts(renderer);
 		
 		// eigener user agent
 		SharedContext sc = renderer.getSharedContext();		
-		SessionAwareUserAgent userAgent = new SessionAwareUserAgent(renderer.getOutputDevice(), sessionId);
+		SessionAwareUserAgent userAgent = new SessionAwareUserAgent(renderer.getOutputDevice(), uri, UIN);
 		sc.setUserAgentCallback(userAgent);
 		userAgent.setSharedContext(sc);
+		//userAgent.getCSSResource(uri);
 		
-		LOGGER.debug("RENDER URI: " + uri);
+		//System.err.println("CONVERT: " + uri);	
+		//System.err.println("COOKIES: " + cookies);	
+		
+		String content = null;
+		try {
+			content = getContentFromUri(uri, UIN);    		
+        } catch (MalformedURLException e) {
+        	// FIXME
+        	LOGGER.error(e.getMessage());
+        }
+		
+        if (content == null) {
+        	return;
+        }
         
+		// entferne word-Mist
+		content = cleanupWord(content);
+		
+		// stelle sicher, dass content x-html
+		content = cleanupHTML(content);
+		
 		// konvertiere HTML -> PDF
-        renderer.setDocument(uri);
-        renderer.layout(); 
-        ByteArrayOutputStream os2 = new ByteArrayOutputStream();
-        renderer.createPDF(os2); 
-        os2.flush();
-        os2.close();
-        
-        // lade Kopfbereich dazu
-        PdfReader reader = new PdfReader(header);  
-        PdfReader reader2 = new PdfReader(os2.toByteArray());                
-        
-        PdfStamper stamper = new PdfStamper(reader, output);         
-        PdfContentByte cb = stamper.getOverContent(1);
-        PdfImportedPage page = stamper.getImportedPage(reader2, 1);
-        cb.addTemplate(page, 0, 0);
-        stamper.close();        
-
+		renderer.setDocumentFromString(content);
+        renderer.layout();         
+        renderer.createPDF(output); 
         output.flush();
-        output.close();
-        
-        header.close();
+        output.close();			
 	}
+	
+	private static String getContentFromUri(String uri, String UIN) throws IOException {
+	    CookieManager cookieManager = new CookieManager();
+	    CookieHandler.setDefault(cookieManager);
+	    cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
+	    //cookieManager.setAcceptCookie(true);
+	    
+        URL url = new URL(uri);
+        
+		URLConnection conn = url.openConnection();		
+		conn.setDoInput( true );
+		conn.setDoOutput( true );
+		conn.addRequestProperty("Cookie", "VEMALogin=" + UIN);    
+		//System.err.println("cookies:" + cookies);    	
+		
+		//CookieHandler.setDefault(new CookieManager());
+		
+		InputStream in = conn.getInputStream();
+		InputStreamReader is = new InputStreamReader(in);
+		StringBuilder sb= new StringBuilder();
+		BufferedReader br = new BufferedReader(is);
+		String read = br.readLine();
+
+		while(read != null) {
+		    //System.out.println(read);
+		    sb.append(read);
+		    read =br.readLine();
+		}
+
+		return sb.toString();
+	}
+		
+	
+	/*
+	 *  erzeugt pdf aus vorlage + externem header -> stamper
+	 */
+//	public static void create(String uri, String sessionId, InputStream header, OutputStream output) throws IOException, DocumentException {    
+//		// init
+//        ITextRenderer renderer = new ITextRenderer();
+//		initFonts(renderer);
+//		
+//		// eigener user agent
+//		List<String> sessionIds = new ArrayList<String>();
+//		sessionIds.add("JSESSIONID="+sessionId);
+//		SharedContext sc = renderer.getSharedContext();		
+//		SessionAwareUserAgent userAgent = new SessionAwareUserAgent(renderer.getOutputDevice(), sessionIds);
+//		sc.setUserAgentCallback(userAgent);
+//		userAgent.setSharedContext(sc);
+//		
+//		LOGGER.debug("RENDER URI: " + uri);
+//        
+//		// konvertiere HTML -> PDF
+//        renderer.setDocument(uri);
+//        renderer.layout(); 
+//        ByteArrayOutputStream os2 = new ByteArrayOutputStream();
+//        renderer.createPDF(os2); 
+//        os2.flush();
+//        os2.close();
+//        
+//        // lade Kopfbereich dazu
+//        PdfReader reader = new PdfReader(header);  
+//        PdfReader reader2 = new PdfReader(os2.toByteArray());                
+//        
+//        PdfStamper stamper = new PdfStamper(reader, output);         
+//        PdfContentByte cb = stamper.getOverContent(1);
+//        PdfImportedPage page = stamper.getImportedPage(reader2, 1);
+//        cb.addTemplate(page, 0, 0);
+//        stamper.close();        
+//
+//        output.flush();
+//        output.close();
+//        
+//        header.close();
+//	}
 	
 	// erzeugt pdf aus HTML-vorlage / fertig gerendertem content (oben wird content erst noch ausgelesen) 
 	public static void create(OutputStream output, String content, String basepath) throws DocumentException, IOException {
@@ -137,7 +218,7 @@ public class PdfCreator {
 	/*
 	 * hängt pdfs zusammen
 	 */
-	public static void concatPDFs(List<InputStream> streamOfPDFFiles, OutputStream outputStream, boolean paginate) {
+	public static void concatPDFs(List<InputStream> streamOfPDFFiles, OutputStream outputStream, boolean paginate) throws IOException, DocumentException {
 		Document document = new Document();
 		try {
 			List<InputStream> pdfs = streamOfPDFFiles;
@@ -183,16 +264,12 @@ public class PdfCreator {
 			outputStream.flush();
 			document.close();
 			outputStream.close();
-		} catch (Exception e) {
-			e.printStackTrace();
 		} finally {
-			if (document.isOpen())
+			if (document.isOpen()) {
 				document.close();
-			try {
-				if (outputStream != null)
-					outputStream.close();
-			} catch (IOException ioe) {
-				ioe.printStackTrace();
+			}			
+			if (outputStream != null) {
+				outputStream.close();
 			}
 		}
 	}
