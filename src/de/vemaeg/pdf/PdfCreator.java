@@ -1,26 +1,27 @@
 package de.vemaeg.pdf;
 
 import java.awt.Color;
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.net.CookieHandler;
-import java.net.CookieManager;
-import java.net.CookiePolicy;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.ServletException;
+
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.cookie.CookiePolicy;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
 import org.w3c.tidy.Tidy;
 import org.xhtmlrenderer.layout.SharedContext;
@@ -48,7 +49,7 @@ public class PdfCreator {
 	
 	private static final String DIRNAME_FONTS = GlobalConfig.getInstance().getString("dirname.fonts");	
 	
-	public static void createFromInternalUri(OutputStream output, String uri, String UIN) throws IOException, DocumentException {  
+	public static void createFromInternalUri(OutputStream output, String uri, String UIN) throws IOException, DocumentException, ServletException {  
 		// init
         ITextRenderer renderer = new ITextRenderer();
 		initFonts(renderer);
@@ -59,10 +60,7 @@ public class PdfCreator {
 		sc.setUserAgentCallback(userAgent);
 		userAgent.setSharedContext(sc);
 		//userAgent.getCSSResource(uri);
-		
-		//System.err.println("CONVERT: " + uri);	
-		//System.err.println("COOKIES: " + cookies);	
-		
+			
 		String content = null;
 		try {
 			content = getContentFromUri(uri, UIN);    		
@@ -89,79 +87,37 @@ public class PdfCreator {
         output.close();			
 	}
 	
-	private static String getContentFromUri(String uri, String UIN) throws IOException {
-	    CookieManager cookieManager = new CookieManager();
-	    CookieHandler.setDefault(cookieManager);
-	    cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
-	    //cookieManager.setAcceptCookie(true);
+	private static String getContentFromUri(String uri, String UIN) throws IOException, ServletException {
+    
+	    HttpClient client = new HttpClient();	
 	    
-        URL url = new URL(uri);
-        
-		URLConnection conn = url.openConnection();		
-		conn.setDoInput( true );
-		conn.setDoOutput( true );
-		conn.addRequestProperty("Cookie", "VEMALogin=" + UIN);    
-		//System.err.println("cookies:" + cookies);    	
-		
-		//CookieHandler.setDefault(new CookieManager());
-		
-		InputStream in = conn.getInputStream();
-		InputStreamReader is = new InputStreamReader(in);
-		StringBuilder sb= new StringBuilder();
-		BufferedReader br = new BufferedReader(is);
-		String read = br.readLine();
+	    GetMethod method = new GetMethod(uri);
+	    method.getParams().setCookiePolicy(CookiePolicy.DEFAULT);  	    
+	    method.setRequestHeader("Cookie", "VEMALogin=" + UIN + ";");
+	    
+	    byte[] responseBody;
+	    try {
+	    	// Execute the method.
+	    	int statusCode = client.executeMethod(method);
 
-		while(read != null) {
-		    //System.out.println(read);
-		    sb.append(read);
-		    read =br.readLine();
-		}
+	    	if (statusCode != HttpStatus.SC_OK) {
+	    		throw new ServletException("GET Method failed: " + method.getStatusLine());
+	    	}
 
-		return sb.toString();
+	    	// Read the response body.
+	    	responseBody = method.getResponseBody();	  
+
+	    } catch (HttpException e) {
+	    	System.err.println("Fatal protocol violation: " + e.getMessage());
+	    	throw new ServletException(e);	        
+	    	//e.printStackTrace();
+	    } finally {
+	    	// Release the connection.
+	    	method.releaseConnection();
+	    }
+	    
+	    return new String(responseBody);
 	}
-		
-	
-	/*
-	 *  erzeugt pdf aus vorlage + externem header -> stamper
-	 */
-//	public static void create(String uri, String sessionId, InputStream header, OutputStream output) throws IOException, DocumentException {    
-//		// init
-//        ITextRenderer renderer = new ITextRenderer();
-//		initFonts(renderer);
-//		
-//		// eigener user agent
-//		List<String> sessionIds = new ArrayList<String>();
-//		sessionIds.add("JSESSIONID="+sessionId);
-//		SharedContext sc = renderer.getSharedContext();		
-//		SessionAwareUserAgent userAgent = new SessionAwareUserAgent(renderer.getOutputDevice(), sessionIds);
-//		sc.setUserAgentCallback(userAgent);
-//		userAgent.setSharedContext(sc);
-//		
-//		LOGGER.debug("RENDER URI: " + uri);
-//        
-//		// konvertiere HTML -> PDF
-//        renderer.setDocument(uri);
-//        renderer.layout(); 
-//        ByteArrayOutputStream os2 = new ByteArrayOutputStream();
-//        renderer.createPDF(os2); 
-//        os2.flush();
-//        os2.close();
-//        
-//        // lade Kopfbereich dazu
-//        PdfReader reader = new PdfReader(header);  
-//        PdfReader reader2 = new PdfReader(os2.toByteArray());                
-//        
-//        PdfStamper stamper = new PdfStamper(reader, output);         
-//        PdfContentByte cb = stamper.getOverContent(1);
-//        PdfImportedPage page = stamper.getImportedPage(reader2, 1);
-//        cb.addTemplate(page, 0, 0);
-//        stamper.close();        
-//
-//        output.flush();
-//        output.close();
-//        
-//        header.close();
-//	}
 	
 	// erzeugt pdf aus HTML-vorlage / fertig gerendertem content (oben wird content erst noch ausgelesen) 
 	public static void create(OutputStream output, String content, String basepath) throws DocumentException, IOException {
