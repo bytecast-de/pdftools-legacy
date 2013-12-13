@@ -2,8 +2,8 @@
 # globale Konfiguration
 #=================================
 
-dirname.fonts = F:/work/VEMA/vema_tarifrechner/WebContent/pdfTemplates/fonts/
-dirname.indipdf = F:/work/files/indipdf/
+dirname.fonts = /var/ftproot/tomcat/fonts/
+dirname.indipdf = /var/ftproot/daten/vema-eg.de/indipdf/
 
 filename.macros = 00000_makros.vm
 
