@@ -59,14 +59,13 @@ public class PdfCreator {
 		SessionAwareUserAgent userAgent = new SessionAwareUserAgent(renderer.getOutputDevice(), uri, UIN);
 		sc.setUserAgentCallback(userAgent);
 		userAgent.setSharedContext(sc);
-		//userAgent.getCSSResource(uri);
 			
 		String content = null;
 		try {
 			content = getContentFromUri(uri, UIN);    		
         } catch (MalformedURLException e) {
-        	// FIXME
         	LOGGER.error(e.getMessage());
+        	throw new ServletException(e);
         }
 		
         if (content == null) {
@@ -89,13 +88,19 @@ public class PdfCreator {
 	
 	private static String getContentFromUri(String uri, String UIN) throws IOException, ServletException {
     
-	    HttpClient client = new HttpClient();	
+	    HttpClient client = new HttpClient();
+	    
+//	    System.err.println("START");
+//	    org.apache.commons.httpclient.Cookie[] cookies = client.getState().getCookies();
+//	    for(int i = 0; i < cookies.length; ++i) {
+//	    	System.err.println(cookies[i]);
+//	    }
 	    
 	    GetMethod method = new GetMethod(uri);
 	    method.getParams().setCookiePolicy(CookiePolicy.DEFAULT);  	    
 	    method.setRequestHeader("Cookie", "VEMALogin=" + UIN + ";");
 	    
-	    byte[] responseBody;
+	    String responseBody = null;
 	    try {
 	    	// Execute the method.
 	    	int statusCode = client.executeMethod(method);
@@ -105,18 +110,34 @@ public class PdfCreator {
 	    	}
 
 	    	// Read the response body.
-	    	responseBody = method.getResponseBody();	  
+	    	responseBody = method.getResponseBodyAsString();	    	
+	    	if (responseBody == null || responseBody.length() == 0) {
+	    		LOGGER.error("empty HTTP response");
+	    	    org.apache.commons.httpclient.Cookie[] cookies = client.getState().getCookies();
+	    	    for(int i = 0; i < cookies.length; ++i) {
+	    	    	LOGGER.error("cookie: " + cookies[i]);
+	    	    }
+	    	}
 
 	    } catch (HttpException e) {
-	    	System.err.println("Fatal protocol violation: " + e.getMessage());
-	    	throw new ServletException(e);	        
-	    	//e.printStackTrace();
+	    	LOGGER.error("Fatal protocol violation: " + e.getMessage());
+	    	throw new ServletException(e);
 	    } finally {
 	    	// Release the connection.
 	    	method.releaseConnection();
+	    	
+	    	 // Clear cookies etc.
+	    	client.getState().clear();
 	    }
+	   
 	    
-	    return new String(responseBody);
+//	    System.err.println("END");
+//	    cookies = client.getState().getCookies();
+//	    for(int i = 0; i < cookies.length; ++i) {
+//	    	System.err.println(cookies[i]);
+//	    }
+	    
+	    return responseBody;
 	}
 	
 	// erzeugt pdf aus HTML-vorlage / fertig gerendertem content (oben wird content erst noch ausgelesen) 
