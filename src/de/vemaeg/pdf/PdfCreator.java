@@ -47,7 +47,8 @@ public class PdfCreator {
 	
 	private static final Logger LOGGER = Logger.getLogger(PdfCreator.class);
 	
-	private static final String DIRNAME_FONTS = GlobalConfig.getInstance().getString("dirname.fonts");	
+	private static final String DIRNAME_FONTS = GlobalConfig.getInstance().getString("dirname.fonts");
+	private static final String[] FONTLIST = GlobalConfig.getInstance().getStringArray("fontlist");	
 	
 	public static void createFromInternalUri(OutputStream output, String uri, String UIN) throws IOException, DocumentException, ServletException {  
 		// init
@@ -181,15 +182,30 @@ public class PdfCreator {
         output.close();
 	}
 	
-	private static void initFonts(ITextRenderer renderer) throws DocumentException, IOException {
-		String fontPath = DIRNAME_FONTS;
-		
+	private static void initFonts(ITextRenderer renderer) {		
         ITextFontResolver resolver = renderer.getFontResolver();
-        resolver.addFont(fontPath + "HelveticaNeueLTStd-LtCn.otf", true);
-        resolver.addFont(fontPath + "HelveticaNeueLTStd-LtCnO.otf", true);
-        resolver.addFont(fontPath + "HelveticaNeueLTStd-MdCn.otf", true);
-        resolver.addFont(fontPath + "HelveticaNeueLTStd-MdCnO.otf", true);
-        resolver.addFont(fontPath + "HelveticaNeueLTStd-UltLt.otf", true);
+        
+        for(int i = 0; i < FONTLIST.length; ++i) {
+        	String fontName = FONTLIST[i];
+        	if (fontName == null) continue;
+        	
+        	String fontPath = DIRNAME_FONTS + fontName.trim();	        	
+       	
+        	try {
+        		resolver.addFont(fontPath, true);    
+        		
+            	//BaseFont font = BaseFont.createFont(fontPath, BaseFont.CP1252, true);
+            	//LOGGER.error(font.getAllNameEntries());
+        	} catch (DocumentException e) {
+        		LOGGER.error("Error loading font: " + fontPath, e);
+        		continue;
+        	} catch (IOException e) {
+        		LOGGER.error("Error loading font: " + fontPath, e);
+        		continue;
+        	} 
+        	
+        	LOGGER.debug("Loaded font: " + fontPath);
+        }
 	}
 	
 	/*

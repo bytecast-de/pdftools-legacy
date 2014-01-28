@@ -5,6 +5,8 @@
 dirname.fonts = /var/ftproot/tomcat/fonts/
 dirname.indipdf = /var/ftproot/daten/vema-eg.de/indipdf/
 
+fontlist = HelveticaNeueLTStd-LtCn.otf,HelveticaNeueLTStd-LtCnO.otf,HelveticaNeueLTStd-MdCn.otf,HelveticaNeueLTStd-MdCnO.otf,HelveticaNeueLTStd-UltLt.otf,code128.ttf
+
 filename.macros = 00000_makros.vm
 
 
