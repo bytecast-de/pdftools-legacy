@@ -8,10 +8,9 @@ import java.net.URLConnection;
 
 import org.apache.log4j.Logger;
 import org.xhtmlrenderer.pdf.ITextOutputDevice;
-import org.xhtmlrenderer.pdf.ITextUserAgent;
 import org.xhtmlrenderer.resource.ImageResource;
 
-public class SessionAwareUserAgent extends ITextUserAgent {
+public class SessionAwareUserAgent extends ITextUserAgent2 {
 	
 	private static final Logger LOGGER = Logger.getLogger(SessionAwareUserAgent.class);
 	
