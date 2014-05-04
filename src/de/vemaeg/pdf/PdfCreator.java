@@ -569,6 +569,9 @@ public class PdfCreator {
 		tidy.setShowWarnings(false);		
 		tidy.setQuiet(true);		
 		
+		// Ergebnis immer ausgeben, auch bei HTML-Fehlern
+		tidy.setForceOutput(true);
+		
 		StringWriter out = new StringWriter(); 
 		tidy.parse(new StringReader(input), out);
 		
