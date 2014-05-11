@@ -21,7 +21,7 @@ import org.apache.velocity.exception.ResourceNotFoundException;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
 
-import com.lowagie.text.DocumentException;
+import com.itextpdf.text.DocumentException;
 
 import de.vemaeg.common.db.dao.DAOFactory;
 import de.vemaeg.common.db.dao.HibernateUtil;
