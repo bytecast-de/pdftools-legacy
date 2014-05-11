@@ -20,9 +20,12 @@ import org.xhtmlrenderer.resource.ImageResource;
 import org.xhtmlrenderer.swing.NaiveUserAgent;
 import org.xhtmlrenderer.util.XRLog;
 
-import com.lowagie.text.Image;
-import com.lowagie.text.Rectangle;
-import com.lowagie.text.pdf.PdfReader;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfReader;
+
+
+
 
 public class ITextUserAgent2 extends NaiveUserAgent {
     private static final int IMAGE_CACHE_CAPACITY = 128;
