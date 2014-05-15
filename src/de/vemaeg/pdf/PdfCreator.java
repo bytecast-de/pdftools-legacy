@@ -312,6 +312,19 @@ public class PdfCreator {
 		outputStream.close();
 	}
 	
+	private static int[] parsePageRange(String range) {		
+		String[] tmp = range.split("-");
+		if (tmp.length == 0) return null;
+		
+		int from = Integer.parseInt(tmp[0]);
+		int to = from;
+		if (tmp.length == 2) {
+			to =  Integer.parseInt(tmp[1]);
+		}
+		
+		return new int[] {from, to};
+	}
+	
 	public static void pdfOverlayMulti(InputStream base, Map<InputStream, String> overlays, OutputStream outputStream) throws IOException, DocumentException, PdfException {
 		
 		// optionale Basis-Seite
@@ -328,23 +341,48 @@ public class PdfCreator {
 				this.page = page;
 				this.reader = reader;
 			}
+			
 			public int page;
 			public PdfReader reader;
 		};
 		
 		Map<Integer, List<Overlay>> pageMap = new HashMap<Integer, List<Overlay>>();
+		Map<InputStream, PdfReader> readers = new HashMap<InputStream, PdfReader>();
 		
+		// Ermittle Seitenzahl (gesamt) des Dokuments
+		// Wenn Seitenzahl bzw. Zuordnung des Overlays größer als die des Basis-Dokuments ist, erweitere Basis-Dokument
 		for(InputStream content : overlays.keySet()) {
 			String seiten = overlays.get(content);
 			PdfReader overlayReader = new PdfReader(content);	
-			int overPages = overlayReader.getNumberOfPages();
+			readers.put(content, overlayReader);
+			int overPages = overlayReader.getNumberOfPages(); // Seiten-Anzahl des Overlays
 			
 			// alle Seiten
-			if (seiten.compareToIgnoreCase("alle") == 0) {
+			if (seiten.compareToIgnoreCase("alle") == 0) {				
 				if (overPages > numPages) {
 					numPages = overPages;
 				}
-				
+				continue;
+			}
+			
+			// ausgewählte Seiten
+			int[] res = parsePageRange(seiten);
+			if (res == null) continue;
+			
+			int max = res[1] + (overPages-1);
+			if (max > numPages) {
+				numPages = max;
+			}
+		}
+		
+		
+		for(InputStream content : overlays.keySet()) {
+			String seiten = overlays.get(content);
+			PdfReader overlayReader = readers.get(content);
+			int overPages = overlayReader.getNumberOfPages();
+			
+			// alle Seiten
+			if (seiten.compareToIgnoreCase("alle") == 0) {				
 				for (int i = 1; i <= numPages; ++i) {
 					List<Overlay> l = pageMap.get(i);
 					if (l == null) {
@@ -358,23 +396,12 @@ public class PdfCreator {
 					l.add(new Overlay(overPage, overlayReader));
 				}
 				continue;
-			} 
-			
-			// ausgewählte Seiten
-			String[] tmp = seiten.split("-");
-			if (tmp.length == 0) continue;			
-			int from = Integer.parseInt(tmp[0]);
-			int to = from;
-			if (tmp.length == 2) {
-				to =  Integer.parseInt(tmp[1]);
-			}
+			}			
 
-			int max = to + (overPages-1);
-			if (max > numPages) {
-				numPages = max;
-			}
+			int[] res = parsePageRange(seiten);
+			if (res == null) continue;
 			
-			for (int i = from; i <= to; ++i) {
+			for (int i = res[0]; i <= res[1]; ++i) {
 				for (int j = 0; j < overPages; ++j) {
 					List<Overlay> l = pageMap.get(i+j);
 					if (l == null) {
@@ -409,7 +436,7 @@ public class PdfCreator {
 			// overlays
 			List<Overlay> overs = pageMap.get(i);
 			if (overs == null) continue;			
-			for(Overlay over : overs) {				
+			for(Overlay over : overs) {
 				if (over.page > over.reader.getNumberOfPages()) {
 					LOGGER.error("overlay page out of range: " + over.page);
 					continue;
