@@ -322,12 +322,16 @@ public class PdfCreator {
 		}
 		
 		// Ermittle Gesamt-Seitenzahl des Dokuments
-		// Sie ergibt sich aus dem Maximum der Seiten Basis-Dokuments, der Seiten aller zugeordneten Overlays
+		// Sie ergibt sich aus dem Maximum der Seiten Basis-Dokuments und der Seiten aller zugeordneten Overlays
 		OverlayAssignment assignment = new OverlayAssignment();
 		for(InputStream content : overlays.keySet()) {
 			OverlayDescriptor d = new OverlayDescriptor(new PdfReader(content), overlays.get(content));
 			assignment.addDescriptor(d);
-			baseMaxPageNum = d.checkMaxPageNumber(baseMaxPageNum);
+			
+			int overlaySize = d.getMinimumDocumentSize();
+			if (overlaySize > baseMaxPageNum) {
+				baseMaxPageNum = overlaySize;
+			}
 		}
 		
 		if (baseMaxPageNum == 0) {
