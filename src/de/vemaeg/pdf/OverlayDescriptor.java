@@ -33,7 +33,7 @@ public class OverlayDescriptor {
 	public OverlayDescriptor(PdfReader reader, String range) {
 		this.reader = reader;
 		this.numPages = reader.getNumberOfPages();
-		this.initRange(range);
+		this.initRange(range.trim());
 	}
 
 	/**

@@ -46,7 +46,7 @@ public class ImageTag {
 	 */
 	public String resizeLogo(int mitId, int maxWidth, int maxHeight) {
 	    Mitglied m = loadMitglied(mitId);
-	    if (m == null) {
+	    if (m == null || m.getLogoStripped() == null) {
 	        return "src=\"\"";
 	    }
 	    
