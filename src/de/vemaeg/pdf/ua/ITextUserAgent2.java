@@ -1,4 +1,4 @@
-package de.vemaeg.pdf;
+package de.vemaeg.pdf.ua;
 
 /**
  * override wg image caching... :-(

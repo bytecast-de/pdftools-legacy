@@ -1,4 +1,4 @@
-package de.vemaeg.pdf;
+package de.vemaeg.pdf.ua;
 
 import org.apache.log4j.Logger;
 import org.xhtmlrenderer.pdf.ITextOutputDevice;
