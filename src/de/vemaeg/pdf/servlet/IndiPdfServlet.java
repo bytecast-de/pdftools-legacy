@@ -1,6 +1,8 @@
 package de.vemaeg.pdf.servlet;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -8,7 +10,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.jackson.map.ObjectMapper;
+import org.hibernate.Session;
 
+import de.vemaeg.common.db.dao.DAOFactory;
+import de.vemaeg.common.db.dao.HibernateUtil;
+import de.vemaeg.common.db.dao.KundeDAO;
+import de.vemaeg.common.db.model.Kunde;
+import de.vemaeg.common.util.StringUtil;
 import de.vemaeg.pdf.IndiPdfCreator;
 import de.vemaeg.pdf.PdfException;
 
@@ -106,8 +114,34 @@ public class IndiPdfServlet extends HttpServlet {
 	}
 	
 	private String createFilename(RequestData data) {
-		String filename = "test";
+		DAOFactory daoFactory = DAOFactory.instance(DAOFactory.HIBERNATE);
+		
+		Session s = HibernateUtil.getSession();
+		Kunde kunde = null;
+		try {
+			s.beginTransaction();	
+
+			KundeDAO kDao = daoFactory.getKundeDAO();
+			kunde = kDao.findByCode(data.kdCode);
+			
+			s.getTransaction().commit();
+		} finally {
+			HibernateUtil.closeSession(s);
+		}	
+		
+		SimpleDateFormat df = new SimpleDateFormat( "-yyyy-MM-dd" );
+		String filename = "Dok-"; // TODO: Bezeichnung?
+		if (kunde != null) {
+			filename += String.format("%s-%s",
+				kunde.getNachname(),
+				kunde.getVorname()				
+			);
+		}
+		filename += df.format(new Date());
+		
+		filename = StringUtil.replaceUmlaute(filename);
+		filename = filename.replace("\n", "").replace("\r", ""); 
+		
 		return filename;
 	}
-
 }
