@@ -27,20 +27,6 @@ import org.xhtmlrenderer.pdf.ITextFontResolver;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 import org.xhtmlrenderer.pdf.ITextUserAgent;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
@@ -55,6 +41,8 @@ import com.itextpdf.text.pdf.PdfStamper;
 import com.itextpdf.text.pdf.PdfWriter;
 
 import de.vemaeg.common.util.GlobalConfig;
+import de.vemaeg.pdf.ua.BasepathUserAgent;
+import de.vemaeg.pdf.ua.SessionAwareUserAgent;
 
 public class PdfCreator {	
 	
@@ -386,15 +374,18 @@ public class PdfCreator {
 	}
 	
 	private static void ensurePageExists(Document document, int pageNum, PdfReader reader, int readerPageNum) {		
-		// Seitenformat
+		// Seitenformat: das Format des ersten Stempels definiert die Größe
 		Rectangle rec = reader.getPageSize(readerPageNum);
-		if (rec.getHeight() < rec.getWidth()) {
-			//System.err.println("FORMAT: quer ");
-			document.setPageSize(PageSize.A4.rotate());
-		} else {
-			//System.err.println("FORMAT: hoch ");
-			document.setPageSize(PageSize.A4);
-		}
+		document.setPageSize(rec);
+
+//		if (rec.getHeight() < rec.getWidth()) {
+//			//System.err.println("FORMAT: quer ");
+//			document.setPageSize(PageSize.A4.rotate());
+//		} else {
+//			//System.err.println("FORMAT: hoch ");
+//			document.setPageSize(PageSize.A4);
+//		}
+
 		
 		if (pageNum == 1) {
 			// erzeugt gleichzeitig 1. Seite

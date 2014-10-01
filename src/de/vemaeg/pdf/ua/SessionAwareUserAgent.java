@@ -1,4 +1,4 @@
-package de.vemaeg.pdf;
+package de.vemaeg.pdf.ua;
 
 import java.io.IOException;
 import java.io.InputStream;
