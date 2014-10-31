@@ -92,12 +92,6 @@ public class PdfCreator {
     
 	    HttpClient client = new HttpClient();
 	    
-//	    System.err.println("START");
-//	    org.apache.commons.httpclient.Cookie[] cookies = client.getState().getCookies();
-//	    for(int i = 0; i < cookies.length; ++i) {
-//	    	System.err.println(cookies[i]);
-//	    }
-	    
 	    GetMethod method = new GetMethod(uri);
 	    method.getParams().setCookiePolicy(CookiePolicy.DEFAULT);  	    
 	    method.setRequestHeader("Cookie", "VEMALogin=" + UIN + ";");
@@ -131,14 +125,7 @@ public class PdfCreator {
 	    	 // Clear cookies etc.
 	    	client.getState().clear();
 	    }
-	   
-	    
-//	    System.err.println("END");
-//	    cookies = client.getState().getCookies();
-//	    for(int i = 0; i < cookies.length; ++i) {
-//	    	System.err.println(cookies[i]);
-//	    }
-	    
+	   	    
 	    return responseBody;
 	}
 	
@@ -334,7 +321,7 @@ public class PdfCreator {
 			}	
 			
 			boolean pageExists = false;
-			if (baseReader != null) {							
+			if (baseReader != null && baseReader.getNumberOfPages() >= i) {
 				ensurePageExists(document, i, baseReader, i);
 				pageExists = true;
 				PdfContentByte cbDirect = writer.getDirectContent(); 
@@ -346,7 +333,7 @@ public class PdfCreator {
 			List<OverlayDescriptor> overs = assignment.getOverlays(i);
 			if (overs == null) continue;			
 			for(OverlayDescriptor over : overs) {
-				int overNum = over.getAssignedPageNum(i);	
+				int overNum = over.getAssignedPageNum(i);
 				
 				if (overNum < 1) {
 					LOGGER.error("overlay page out of range: " + i + " - " + overNum);
@@ -357,10 +344,10 @@ public class PdfCreator {
 					continue;
 				}
 				
-				if (!pageExists) {
+				if (!pageExists) {					
 					ensurePageExists(document, i, over.getReader(), overNum);
 					pageExists = true;
-				}
+				}				
 				
 				PdfImportedPage overPage = writer.getImportedPage(over.getReader(), overNum);
 				PdfContentByte cbDirect = writer.getDirectContent(); 
@@ -374,18 +361,9 @@ public class PdfCreator {
 	}
 	
 	private static void ensurePageExists(Document document, int pageNum, PdfReader reader, int readerPageNum) {		
-		// Seitenformat: das Format des ersten Stempels definiert die Größe
+		// Seitenformat: das Format des ersten Stempels definiert die Größe	
 		Rectangle rec = reader.getPageSize(readerPageNum);
 		document.setPageSize(rec);
-
-//		if (rec.getHeight() < rec.getWidth()) {
-//			//System.err.println("FORMAT: quer ");
-//			document.setPageSize(PageSize.A4.rotate());
-//		} else {
-//			//System.err.println("FORMAT: hoch ");
-//			document.setPageSize(PageSize.A4);
-//		}
-
 		
 		if (pageNum == 1) {
 			// erzeugt gleichzeitig 1. Seite
@@ -431,8 +409,6 @@ public class PdfCreator {
         // Font
         String fontPath = DIRNAME_FONTS;
         BaseFont bf = BaseFont.createFont(fontPath + "HelveticaNeueLTStd-LtCnO.otf", "Cp1252", BaseFont.EMBEDDED);
-        //System.err.println("FONT PATH: " + fontPath + "HelveticaNeueLTStd-LtCnO.otf");
-        // System.err.println("BF: " + bf);
         
         PdfContentByte cb;
         int total = reader.getNumberOfPages();
