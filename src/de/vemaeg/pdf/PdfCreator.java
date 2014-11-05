@@ -320,13 +320,12 @@ public class PdfCreator {
 				writer.setPageEmpty(false);  // <- leere Seiten NICHT ignorieren!				
 			}	
 			
-			boolean pageExists = false;
-			int basePageCnt = baseReader.getNumberOfPages();
-			if (baseReader != null && (basePageCnt >= i || repeatBasePages)) {
+			boolean pageExists = false;			
+			if (baseReader != null && (baseReader.getNumberOfPages() >= i || repeatBasePages)) {
 				int readerPageNum = i;
 				
 				if (repeatBasePages) {
-					readerPageNum = ((i-1) % basePageCnt) + 1;
+					readerPageNum = ((i-1) % baseReader.getNumberOfPages()) + 1;
 				}
 				
 				ensurePageExists(document, i, baseReader, readerPageNum);
