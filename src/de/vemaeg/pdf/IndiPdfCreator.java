@@ -76,7 +76,7 @@ public class IndiPdfCreator {
 			InputStream pdfTemplate = getTemplatePDF(indiPdf);
 
 			// 3. zusammenführen
-			PdfCreator.pdfOverlayMulti(pdfTemplate, pdfs, outStream);
+			PdfCreator.pdfOverlayMulti(pdfTemplate, pdfs, outStream, indiPdf.getBriefpapier());
 			
 			s.getTransaction().commit();
 

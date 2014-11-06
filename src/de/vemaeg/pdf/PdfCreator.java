@@ -286,7 +286,7 @@ public class PdfCreator {
 		outputStream.close();
 	}	
 	
-	public static void pdfOverlayMulti(InputStream base, Map<InputStream, String> overlays, OutputStream outputStream) throws IOException, DocumentException, PdfException {
+	public static void pdfOverlayMulti(InputStream base, Map<InputStream, String> overlays, OutputStream outputStream, boolean repeatBasePages) throws IOException, DocumentException, PdfException {
 		
 		// optionale Basis-Seite
 		PdfReader baseReader = null;
@@ -320,12 +320,18 @@ public class PdfCreator {
 				writer.setPageEmpty(false);  // <- leere Seiten NICHT ignorieren!				
 			}	
 			
-			boolean pageExists = false;
-			if (baseReader != null && baseReader.getNumberOfPages() >= i) {
-				ensurePageExists(document, i, baseReader, i);
+			boolean pageExists = false;			
+			if (baseReader != null && (baseReader.getNumberOfPages() >= i || repeatBasePages)) {
+				int readerPageNum = i;
+				
+				if (repeatBasePages) {
+					readerPageNum = ((i-1) % baseReader.getNumberOfPages()) + 1;
+				}
+				
+				ensurePageExists(document, i, baseReader, readerPageNum);
 				pageExists = true;
 				PdfContentByte cbDirect = writer.getDirectContent(); 
-				PdfImportedPage basePage = writer.getImportedPage(baseReader, i);	
+				PdfImportedPage basePage = writer.getImportedPage(baseReader, readerPageNum);	
 				cbDirect.addTemplate(basePage, 0, 0);
 			}
 			
