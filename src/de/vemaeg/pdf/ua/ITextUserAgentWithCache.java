@@ -25,9 +25,11 @@ import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfReader;
 
 
-
-
-public class ITextUserAgent2 extends NaiveUserAgent {
+/**
+ * Modifikation des ITextUserAgent, da das Caching dort viel zu klein dimensioniert ist, 
+ * die Cache-Capacity in der Original-Klassse aber private ist und somit nicht per subclassing überschreibbar.
+ */
+public class ITextUserAgentWithCache extends NaiveUserAgent {
     private static final int IMAGE_CACHE_CAPACITY = 128;
 
     private SharedContext _sharedContext;
@@ -35,9 +37,8 @@ public class ITextUserAgent2 extends NaiveUserAgent {
 
     private final ITextOutputDevice _outputDevice;
 
-    public ITextUserAgent2(ITextOutputDevice outputDevice) {
+    public ITextUserAgentWithCache(ITextOutputDevice outputDevice) {
 		super(IMAGE_CACHE_CAPACITY);
-		System.err.println("CACHE SIZE: " + IMAGE_CACHE_CAPACITY);
 		_outputDevice = outputDevice;
     }
 
@@ -95,14 +96,17 @@ public class ITextUserAgent2 extends NaiveUserAgent {
                         // ignore
                     }
                 }
-            } 
-        } 
+            } else {
+            	failedUriList.add(uri);
+            }
+        }
 
         if (resource != null) {
             resource = new ImageResource(resource.getImageUri(), (FSImage)((ITextFSImage)resource.getImage()).clone());
         } else {
             resource = new ImageResource(uri, null);
         }
+        
 
         return resource;
     }

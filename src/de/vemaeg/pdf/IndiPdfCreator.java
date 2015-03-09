@@ -44,11 +44,11 @@ public class IndiPdfCreator {
 	private static final String DIRNAME_INDIPDF = GlobalConfig.getInstance().getString("dirname.indipdf");
 	private static final String FILENAME_MACROS = GlobalConfig.getInstance().getString("filename.macros");
 	
-	public static void createPDF(OutputStream outStream, Integer pdfId, String UIN, String kdCode, Object daten, String editorText) throws PdfException {
+	public static void createPDF(OutputStream outStream, Integer pdfId, String UIN, String kdCode, Object daten, String editorText, String baseUrl) throws PdfException {
 		if (pdfId == null || pdfId <= 0) {
 			throw new PdfException("Ungueltige PDF ID " + pdfId);
 		}
-		
+
 		Session s = HibernateUtil.getSession();
 		try {			
 			
@@ -70,7 +70,7 @@ public class IndiPdfCreator {
 			}
 			
 			// 1. "Briefpapier" erzeugen
-			Map<InputStream, String> pdfs = createContentPDF(indiPdf, context);
+			Map<InputStream, String> pdfs = createContentPDF(indiPdf, context, baseUrl);
 
 			// 2. Template pdf laden (von URL)
 			InputStream pdfTemplate = getTemplatePDF(indiPdf);
@@ -95,7 +95,7 @@ public class IndiPdfCreator {
 	}
 
 	
-	public static void createVorlagenPDF(OutputStream outStream, Integer vorlId, Object daten) throws PdfException {
+	public static void createVorlagenPDF(OutputStream outStream, Integer vorlId, Object daten, String baseUrl) throws PdfException {
 		
 		Session s = HibernateUtil.getSession();
 		try {
@@ -107,7 +107,8 @@ public class IndiPdfCreator {
 			if (daten != null) {
 			    context.put("daten", daten);
 			}
-			createVorlagenPDF(outStream, vorlPdf, context);
+
+			createVorlagenPDF(outStream, vorlPdf, context, baseUrl);
 			
 			s.getTransaction().commit();
 		} catch (IOException e) {
@@ -128,7 +129,7 @@ public class IndiPdfCreator {
 		}	
 	}
 	
-	private static boolean createVorlagenPDF(OutputStream out, IndiPDFVorlage vorlage, Map<String, Object> context) throws ParseErrorException, MethodInvocationException, ResourceNotFoundException, IOException, DocumentException {
+	private static boolean createVorlagenPDF(OutputStream out, IndiPDFVorlage vorlage, Map<String, Object> context, String baseUrl) throws ParseErrorException, MethodInvocationException, ResourceNotFoundException, IOException, DocumentException {
 		String content = getContent(vorlage);				
 		if (content == null) {
 			LOGGER.warn("PDF Vorlage: Content is null, id " + vorlage.getId());
@@ -142,7 +143,8 @@ public class IndiPdfCreator {
 		    content = "FEHLER: " + e.getMessage();
 		}
 		
-		PdfCreator.create(out, content, null);
+		PdfCreator.create(out, content, baseUrl);
+
 		return true;
 	}
 	
@@ -229,7 +231,7 @@ public class IndiPdfCreator {
 		return context;
 	}
 	
-	private static Map<InputStream, String> createContentPDF(IndiPDF indiPdf, Map<String, Object> context ) throws IOException, DocumentException {
+	private static Map<InputStream, String> createContentPDF(IndiPDF indiPdf, Map<String, Object> context, String baseUrl) throws IOException, DocumentException {
 		Map<InputStream, String> pdfs = new HashMap<InputStream, String>();
 
 		// für alle zugeordneten Vorlagen...
@@ -244,7 +246,7 @@ public class IndiPdfCreator {
 			}
 
 			ByteArrayOutputStream o = new ByteArrayOutputStream();
-			boolean success = createVorlagenPDF(o, vorlage, context);
+			boolean success = createVorlagenPDF(o, vorlage, context, baseUrl);
 			if (success) {
 				pdfs.put(new ByteArrayInputStream(o.toByteArray()), zrd.getSeiten());
 			}
