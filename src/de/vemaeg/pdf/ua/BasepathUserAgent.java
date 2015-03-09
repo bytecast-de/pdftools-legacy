@@ -2,10 +2,9 @@ package de.vemaeg.pdf.ua;
 
 import org.apache.log4j.Logger;
 import org.xhtmlrenderer.pdf.ITextOutputDevice;
-import org.xhtmlrenderer.pdf.ITextUserAgent;
 
 
-public class BasepathUserAgent extends ITextUserAgent {
+public class BasepathUserAgent extends ITextUserAgentWithCache {
 	
 	private static final Logger LOGGER = Logger.getLogger(BasepathUserAgent.class);
 	

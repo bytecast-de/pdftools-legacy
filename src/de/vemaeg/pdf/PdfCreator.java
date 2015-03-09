@@ -25,7 +25,6 @@ import org.w3c.tidy.Tidy;
 import org.xhtmlrenderer.layout.SharedContext;
 import org.xhtmlrenderer.pdf.ITextFontResolver;
 import org.xhtmlrenderer.pdf.ITextRenderer;
-import org.xhtmlrenderer.pdf.ITextUserAgent;
 
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
@@ -42,6 +41,7 @@ import com.itextpdf.text.pdf.PdfWriter;
 
 import de.vemaeg.common.util.GlobalConfig;
 import de.vemaeg.pdf.ua.BasepathUserAgent;
+import de.vemaeg.pdf.ua.ITextUserAgentWithCache;
 import de.vemaeg.pdf.ua.SessionAwareUserAgent;
 
 public class PdfCreator {	
@@ -136,11 +136,11 @@ public class PdfCreator {
 		
 		// eigener user agent
 		SharedContext sc = renderer.getSharedContext();
-		ITextUserAgent userAgent;
+		ITextUserAgentWithCache userAgent;
 		if (basepath != null) {
 			userAgent = new BasepathUserAgent(renderer.getOutputDevice(), basepath);
 		} else {
-			userAgent = new ITextUserAgent(renderer.getOutputDevice());
+			userAgent = new ITextUserAgentWithCache(renderer.getOutputDevice());
 		}		
 
 		sc.setUserAgentCallback(userAgent);

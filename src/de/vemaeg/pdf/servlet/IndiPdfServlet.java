@@ -55,10 +55,11 @@ public class IndiPdfServlet extends HttpServlet {
 	        return;
 	    }
 		
+	    String baseUrl = request.getScheme() + "://" + request.getServerName();
 		if (data.pdfId != null) {			
 			try {
 				setRespHeaders(response, data);
-				IndiPdfCreator.createPDF(response.getOutputStream(), data.pdfId, data.UIN, data.kdCode, data.daten, data.editor);
+				IndiPdfCreator.createPDF(response.getOutputStream(), data.pdfId, data.UIN, data.kdCode, data.daten, data.editor, baseUrl);
 			} catch (PdfException e) {
 				response.reset();
 				response.getWriter().print(e.getMessage());
@@ -68,8 +69,8 @@ public class IndiPdfServlet extends HttpServlet {
 		
 		if (data.vorlId != null) {
 			try {
-				setRespHeaders(response, data);
-				IndiPdfCreator.createVorlagenPDF(response.getOutputStream(), data.vorlId, data.daten);
+				setRespHeaders(response, data);				
+				IndiPdfCreator.createVorlagenPDF(response.getOutputStream(), data.vorlId, data.daten, baseUrl);
 			} catch (PdfException e) {
 				response.reset();
 				response.getWriter().print(e.getMessage());
