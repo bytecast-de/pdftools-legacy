@@ -5,9 +5,12 @@ package de.vemaeg.pdf.ua;
  */
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +34,9 @@ import com.itextpdf.text.pdf.PdfReader;
  */
 public class ITextUserAgentWithCache extends NaiveUserAgent {
     private static final int IMAGE_CACHE_CAPACITY = 128;
+    
+    private static final int CONNECT_TIMEOUT = 1000;
+    private static final int READ_TIMEOUT = 1000;
 
     private SharedContext _sharedContext;
     private List<String> failedUriList = new ArrayList<String>();
@@ -123,4 +129,25 @@ public class ITextUserAgentWithCache extends NaiveUserAgent {
     public void setSharedContext(SharedContext sharedContext) {
         _sharedContext = sharedContext;
     }
+    
+    protected InputStream resolveAndOpenStream(String uri) {
+        java.io.InputStream is = null;
+        uri = resolveURI(uri);
+        try {
+            URL url = new URL(uri);
+            URLConnection urlConn = url.openConnection();
+            urlConn.setConnectTimeout(CONNECT_TIMEOUT);
+            urlConn.setReadTimeout(READ_TIMEOUT);
+            urlConn.setAllowUserInteraction(false);
+            is = urlConn.getInputStream();
+        } catch (java.net.MalformedURLException e) {
+            XRLog.exception("bad URL given: " + uri, e);
+        } catch (java.io.FileNotFoundException e) {
+            XRLog.exception("item at URI " + uri + " not found");
+        } catch (java.io.IOException e) {
+            XRLog.exception("IO problem for " + uri, e);
+        }
+        return is;
+    }
+
 }
