@@ -536,7 +536,7 @@ public class PdfCreator {
 		
 		// xml namespaces 
 		sc.add("(?si)<\\?xml:namespace(.*?)>");		
-		sc.add("(?si)(?<=</?)[a-z0-9]:");
+		sc.add("(?si)(?<=</?)[a-z0-9]+:");
 		
 		for (String s : sc) {
 			str = str.replaceAll(s, "");
