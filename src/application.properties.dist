@@ -9,3 +9,10 @@ fontlist = HelveticaNeueLTStd-LtCn.otf,HelveticaNeueLTStd-LtCnO.otf,HelveticaNeu
 
 filename.macros = 00000_makros.vm
 
+#----
+# VEMA-Authentication
+#----
+auth.secret = zW2uUFyLjEB1tcJUeOEJU5yncGti8t
+auth.client_id = pdftool
+auth.service_url = https://login.vemaeg.de/
+auth.login_url = https://login.vemaeg.de/
