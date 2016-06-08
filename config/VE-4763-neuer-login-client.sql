@@ -1,0 +1,4 @@
+INSERT INTO `clients` (`id`, `name`, `default_url`, `secret`, `created_at`, `updated_at`, `created_by`, `updated_by`) VALUES ('pdftool', 'PDF-Tool', '', 'zW2uUFyLjEB1tcJUeOEJU5yncGti8t', '2016-06-08 00:00:00', '2016-06-08 00:00:00', NULL, NULL);
+
+INSERT INTO `group_clients` (`group_id`, `client_id`, `created_at`, `updated_at`, `created_by`, `updated_by`) VALUES ('1', 'pdftool', '2016-06-08 00:00:00', '2016-06-08 00:00:00', NULL, NULL);
+INSERT INTO `group_clients` (`group_id`, `client_id`, `created_at`, `updated_at`, `created_by`, `updated_by`) VALUES ('3', 'pdftool', '2016-06-08 00:00:00', '2016-06-08 00:00:00', NULL, NULL);

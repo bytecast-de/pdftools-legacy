@@ -10,11 +10,25 @@
 			<param-name>encoding</param-name>
 			<param-value>UTF-8</param-value>
 		</init-param>
-	</filter>
-
+	</filter>	
 	<filter-mapping>
 		<filter-name>EncodingFilter</filter-name>
 		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<filter>
+		<filter-name>AuthenticationFilter</filter-name>
+		<filter-class>de.vemaeg.common.auth.AuthenticationFilter</filter-class>
+		<init-param>
+			<param-name>dataProcessors</param-name>
+			<param-value>de.vemaeg.common.auth.AuthenticationDataProcessorSitzung</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>AuthenticationFilter</filter-name>
+		<url-pattern>/IndiPdfServlet</url-pattern>
+		<url-pattern>/MacroServlet</url-pattern>
+		<url-pattern>/PdfProducer</url-pattern>
 	</filter-mapping>
 
 	<display-name>vema_pdf</display-name>
@@ -45,15 +59,6 @@
 		<url-pattern>/MacroServlet</url-pattern>
 	</servlet-mapping>
 
-	<servlet>
-		<servlet-name>LoginServlet</servlet-name>
-		<servlet-class>de.vemaeg.common.servlet.LoginServlet</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>LoginServlet</servlet-name>
-		<url-pattern>/login</url-pattern>
-	</servlet-mapping>
-	
 	<servlet>
 		<servlet-name>PdfProducer</servlet-name>
 		<servlet-class>de.vemaeg.pdf.servlet.PdfProducer</servlet-class>
