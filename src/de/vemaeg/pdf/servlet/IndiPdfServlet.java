@@ -8,14 +8,18 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
+import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.hibernate.Session;
 
+import de.vemaeg.common.auth.AuthenticationDataProcessorSitzung;
 import de.vemaeg.common.db.dao.DAOFactory;
 import de.vemaeg.common.db.dao.HibernateUtil;
 import de.vemaeg.common.db.dao.KundeDAO;
 import de.vemaeg.common.db.model.Kunde;
+import de.vemaeg.common.db.model.Sitzung;
 import de.vemaeg.common.util.StringUtil;
 import de.vemaeg.pdf.IndiPdfCreator;
 import de.vemaeg.pdf.PdfException;
@@ -23,13 +27,12 @@ import de.vemaeg.pdf.PdfException;
 public class IndiPdfServlet extends HttpServlet {
 	
 	private static final long serialVersionUID = -251049936448814025L;
-	//private static final Logger LOGGER = Logger.getLogger(IndiPdfServlet.class);	
+	private static final Logger LOGGER = Logger.getLogger(IndiPdfServlet.class);	
 
 	private static class RequestData {
 		// input
 		public Integer pdfId = null;	
 		public Integer vorlId = null;	
-		public String UIN = null;
 		public String kdCode = null;
 		public Object daten = null;
 		public String editor = null;
@@ -54,12 +57,15 @@ public class IndiPdfServlet extends HttpServlet {
 	        response.getWriter().print(e.getMessage());
 	        return;
 	    }
+	    
+	    Sitzung sitzung = this.getSitzung(request);   
+	    IndiPdfCreator creator = new IndiPdfCreator(sitzung);
 		
 	    String baseUrl = request.getScheme() + "://" + request.getServerName();
 		if (data.pdfId != null) {			
 			try {
 				setRespHeaders(response, data);
-				IndiPdfCreator.createPDF(response.getOutputStream(), data.pdfId, data.UIN, data.kdCode, data.daten, data.editor, baseUrl);
+				creator.createPDF(response.getOutputStream(), data.pdfId, data.kdCode, data.daten, data.editor, baseUrl);
 			} catch (PdfException e) {
 				response.reset();
 				response.getWriter().print(e.getMessage());
@@ -70,7 +76,7 @@ public class IndiPdfServlet extends HttpServlet {
 		if (data.vorlId != null) {
 			try {
 				setRespHeaders(response, data);				
-				IndiPdfCreator.createVorlagenPDF(response.getOutputStream(), data.vorlId, data.daten, baseUrl);
+				creator.createVorlagenPDF(response.getOutputStream(), data.vorlId, data.kdCode, data.daten, baseUrl);
 			} catch (PdfException e) {
 				response.reset();
 				response.getWriter().print(e.getMessage());
@@ -79,6 +85,25 @@ public class IndiPdfServlet extends HttpServlet {
 		}
 		
 		response.getWriter().print("ungueltiger Parameter");
+	}
+	
+	private Sitzung getSitzung(HttpServletRequest request) {
+		HttpSession session = request.getSession();
+		if (session == null) {
+			return null;
+		}
+		
+		Object sitzungObj = session.getAttribute(AuthenticationDataProcessorSitzung.SESSION_KEY_SITZUNG);
+		if (sitzungObj == null) {
+			return null;
+		}
+		
+		if (! (sitzungObj instanceof Sitzung)) {
+			LOGGER.error("Invalid class in session, expected Sitzung: " + sitzungObj.getClass());
+			return null;
+		}
+		
+		return (Sitzung) sitzungObj;
 	}
 	
 	private void setRespHeaders(HttpServletResponse response, RequestData data) {
@@ -101,7 +126,6 @@ public class IndiPdfServlet extends HttpServlet {
 			data.vorlId = Integer.parseInt(tmp);
 		}
 		
-		data.UIN = request.getParameter("UIN");
 		data.kdCode = request.getParameter("kdCode");
 		data.editor = request.getParameter("editor");
 		

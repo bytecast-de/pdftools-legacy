@@ -18,7 +18,6 @@ import org.apache.log4j.Logger;
 import org.apache.velocity.exception.MethodInvocationException;
 import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.ResourceNotFoundException;
-import org.hibernate.Hibernate;
 import org.hibernate.Session;
 
 import com.itextpdf.text.DocumentException;
@@ -26,7 +25,6 @@ import com.itextpdf.text.DocumentException;
 import de.vemaeg.common.db.dao.DAOFactory;
 import de.vemaeg.common.db.dao.HibernateUtil;
 import de.vemaeg.common.db.dao.KundeDAO;
-import de.vemaeg.common.db.dao.SitzungDAO;
 import de.vemaeg.common.db.model.IndiPDF;
 import de.vemaeg.common.db.model.IndiPDFVorlage;
 import de.vemaeg.common.db.model.IndiPDFZrd;
@@ -34,7 +32,6 @@ import de.vemaeg.common.db.model.Kunde;
 import de.vemaeg.common.db.model.Mitarbeiter;
 import de.vemaeg.common.db.model.Mitglied;
 import de.vemaeg.common.db.model.Sitzung;
-import de.vemaeg.common.db.model.Versicherer;
 import de.vemaeg.common.util.GlobalConfig;
 import de.vemaeg.common.util.VelocityRenderer;
 
@@ -44,7 +41,13 @@ public class IndiPdfCreator {
 	private static final String DIRNAME_INDIPDF = GlobalConfig.getInstance().getString("dirname.indipdf");
 	private static final String FILENAME_MACROS = GlobalConfig.getInstance().getString("filename.macros");
 	
-	public static void createPDF(OutputStream outStream, Integer pdfId, String UIN, String kdCode, Object daten, String editorText, String baseUrl) throws PdfException {
+	private Sitzung sitzung = null;
+	
+	public IndiPdfCreator(Sitzung sitzung) {
+		this.sitzung = sitzung;
+	}
+	
+	public void createPDF(OutputStream outStream, Integer pdfId, String kdCode, Object daten, String editorText, String baseUrl) throws PdfException {
 		if (pdfId == null || pdfId <= 0) {
 			throw new PdfException("Ungueltige PDF ID " + pdfId);
 		}
@@ -53,15 +56,11 @@ public class IndiPdfCreator {
 		try {			
 			
 			s.beginTransaction();			
-			IndiPDF indiPdf = (IndiPDF) s.load(IndiPDF.class, pdfId);	
+			IndiPDF indiPdf = (IndiPDF) s.load(IndiPDF.class, pdfId);			
 			
-			// TODO: DB nach übergebenen IDs auslesen - velocity context vorbereiten
 			Map<String, Object> context = null;
-			if (UIN == null || UIN.length() == 0) {
-				context = createVelocityTestContext(s);
-			} else {
-				context = createVelocityContext(s, UIN, kdCode);
-			}
+			context = createVelocityContext(s, kdCode);
+			
 			if (daten != null) {
 			    context.put("daten", daten);
 			}
@@ -95,15 +94,14 @@ public class IndiPdfCreator {
 	}
 
 	
-	public static void createVorlagenPDF(OutputStream outStream, Integer vorlId, Object daten, String baseUrl) throws PdfException {
-		
+	public void createVorlagenPDF(OutputStream outStream, Integer vorlId, String kdCode, Object daten, String baseUrl) throws PdfException {		
 		Session s = HibernateUtil.getSession();
 		try {
 			s.beginTransaction();			
 
 			IndiPDFVorlage vorlPdf = (IndiPDFVorlage) s.load(IndiPDFVorlage.class, vorlId);	
 			
-			Map<String, Object> context = createVelocityTestContext(s);	
+			Map<String, Object> context = createVelocityContext(s, kdCode);	
 			if (daten != null) {
 			    context.put("daten", daten);
 			}
@@ -148,28 +146,21 @@ public class IndiPdfCreator {
 		return true;
 	}
 	
-	private static Map<String, Object> createVelocityContext(Session s, String UIN, String kdCode) {
+	private Map<String, Object> createVelocityContext(Session s, String kdCode) {
 		Map<String, Object> context = new HashMap<String, Object>();
 		
-		DAOFactory daoFactory = DAOFactory.instance(DAOFactory.HIBERNATE);
-		SitzungDAO sDao = daoFactory.getSitzungDAO();
-		Sitzung sitzung = sDao.findById(UIN, false);
+		// utils
+		context.put("util", IndiPdfCreator.class);		
 		
+		// Session-spezifische Daten
 		if (sitzung == null) {
-			LOGGER.warn("Indi PDF: Ungültige UIN " + UIN);
-			return context;
-		}
-		
-		try {
-			Hibernate.initialize(sitzung);
-		} catch (org.hibernate.ObjectNotFoundException e) {
-			LOGGER.warn("Indi PDF: Ungültige UIN " + UIN);
 			return context;
 		}
 		
 		// Makler
 		Mitglied mit = sitzung.getMitglied();
 		context.put("makler", mit);		
+		context.put("imgTag", new ImageTag(mit));	
 		
 		// Mitarbeiter
 		Mitarbeiter arb = sitzung.getMitarbeiter();
@@ -177,10 +168,12 @@ public class IndiPdfCreator {
 			context.put("mitarb", arb);
 		}
 		
+		DAOFactory daoFactory = DAOFactory.instance(DAOFactory.HIBERNATE);		
 		// Kunde
 		if (kdCode != null) {
 			KundeDAO kDao = daoFactory.getKundeDAO();
 			Kunde kd = kDao.findByCode(kdCode);
+			
 			if (kd != null) {
 				context.put("kunde", kd);
 				
@@ -190,12 +183,8 @@ public class IndiPdfCreator {
 					context.put("ansprechp", ansp);
 				}
 			}
-		}
-		
-		// dynamisches Resizing
-		context.put("imgTag", new ImageTag(mit));
-		
-		context.put("util", IndiPdfCreator.class);
+		}	
+
 		
 		//Versicherer vr = (Versicherer) s.load(Versicherer.class, 23);
 		//context.put("vr", vr);		
@@ -206,29 +195,6 @@ public class IndiPdfCreator {
 	public static String heute() { // NO_UCD
 		SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
 		return format.format(new Date());
-	}
-	
-	private static Map<String, Object> createVelocityTestContext(Session s) {
-		Mitglied mit = (Mitglied) s.load(Mitglied.class, 385);
-		Mitarbeiter arb = (Mitarbeiter) s.load(Mitarbeiter.class, 6811);
-		Versicherer vr = (Versicherer) s.load(Versicherer.class, 23);		
-		
-		DAOFactory daoFactory = DAOFactory.instance(DAOFactory.HIBERNATE);
-		KundeDAO dao = daoFactory.getKundeDAO();
-		Kunde kd = dao.findByCode("7623f75ed2d18885db28ac22");
-
-		Map<String, Object> context = new HashMap<String, Object>();
-		context.put("makler", mit);
-		context.put("mitarb", arb);
-		context.put("ansprechp", arb);
-		context.put("vr", vr);
-		context.put("kunde", kd);
-		
-		// dynamisches Resizing
-		context.put("imgTag", new ImageTag(mit));
-		context.put("util", IndiPdfCreator.class);
-		
-		return context;
 	}
 	
 	private static Map<InputStream, String> createContentPDF(IndiPDF indiPdf, Map<String, Object> context, String baseUrl) throws IOException, DocumentException {
