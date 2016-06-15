@@ -16,7 +16,9 @@ public class ImageTag {
 	
 	private static final Logger LOGGER = Logger.getLogger(ImageTag.class);
 	private static final String LOGO_BASE_URL = "https://www.vemaeg.de/_img/mitglieder/";	
-	private Mitglied mitglied;
+	private Mitglied mitglied = null;
+	
+	public ImageTag() {	}
 	
 	public ImageTag(Mitglied mitglied) {
 		this.mitglied = mitglied;
@@ -24,7 +26,7 @@ public class ImageTag {
 	
 	public String resize(String url, int maxWidth, int maxHeight) {	
 		if (url.compareToIgnoreCase("logo") == 0) {
-			if (mitglied.getLogoStripped() != null) {
+			if (mitglied != null && mitglied.getLogoStripped() != null) {
 				url = LOGO_BASE_URL + mitglied.getLogoStripped();
 			} else {				
 				return "src=\"\"";				
