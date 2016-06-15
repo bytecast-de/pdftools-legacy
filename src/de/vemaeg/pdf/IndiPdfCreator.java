@@ -154,6 +154,8 @@ public class IndiPdfCreator {
 		
 		// Session-spezifische Daten
 		if (sitzung == null) {
+			context.put("imgTag", new ImageTag());
+			
 			return context;
 		}
 		
