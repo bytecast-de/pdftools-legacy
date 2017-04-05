@@ -17,6 +17,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
 import org.hibernate.Session;
 
 import com.itextpdf.text.DocumentException;
@@ -44,6 +45,7 @@ public class IndiPdfServlet extends HttpServlet {
 		public Integer vorlId = null;	
 		public String kdCode = null;
 		public Object daten = null;
+		public List<Object> pdfDaten = null;
 		public String editor = null;
 	}
 
@@ -87,10 +89,17 @@ public class IndiPdfServlet extends HttpServlet {
 			if (data.pdfIds != null) {
 				List<InputStream> pdfs = new ArrayList<InputStream>();	
 							
+				int i = 0;
 				for(Integer pdfId : data.pdfIds) {
+					Object d = data.daten;
+					if (data.pdfDaten != null && data.pdfDaten.size() > i) {
+						d = data.pdfDaten.get(i);
+					}
+					
 					ByteArrayOutputStream out = new ByteArrayOutputStream();	
-					creator.createPDF(out, pdfId, data.kdCode, data.daten, data.editor, baseUrl);
+					creator.createPDF(out, pdfId, data.kdCode, d, data.editor, baseUrl);
 					pdfs.add(new ByteArrayInputStream(out.toByteArray()));
+					++i;
 				}
 
 				PdfCreator.concatPDFs(pdfs, response.getOutputStream(), false);	
@@ -139,6 +148,7 @@ public class IndiPdfServlet extends HttpServlet {
 	
 	private RequestData parseRequest(HttpServletRequest request) throws Exception {
 		RequestData data = new RequestData();	
+		ObjectMapper mapper = new ObjectMapper();
 		
 		String tmp = request.getParameter("pdfId");
 		if (tmp != null) {
@@ -154,8 +164,7 @@ public class IndiPdfServlet extends HttpServlet {
 		data.editor = request.getParameter("editor");
 		
 		tmp = request.getParameter("daten");
-		if (tmp != null && tmp.trim().length() > 0) {		    
-		    ObjectMapper mapper = new ObjectMapper();
+		if (tmp != null && tmp.trim().length() > 0) { 		    
             data.daten = mapper.readValue(tmp, Object.class);
 		}
 		
@@ -167,6 +176,11 @@ public class IndiPdfServlet extends HttpServlet {
 				data.pdfIds.add(Integer.parseInt(id));
 			}
 		}
+		
+		tmp = request.getParameter("pdfDaten");
+		if (tmp != null && tmp.trim().length() > 0) {
+            data.pdfDaten = mapper.readValue(tmp, new TypeReference<List<Object>>(){});
+		}		
 		
 		return data;
 	}
