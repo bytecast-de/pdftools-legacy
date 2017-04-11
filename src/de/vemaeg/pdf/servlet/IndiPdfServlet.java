@@ -1,8 +1,13 @@
 package de.vemaeg.pdf.servlet;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -12,7 +17,10 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
 import org.hibernate.Session;
+
+import com.itextpdf.text.DocumentException;
 
 import de.vemaeg.common.auth.AuthenticationDataProcessorSitzung;
 import de.vemaeg.common.db.dao.DAOFactory;
@@ -22,6 +30,7 @@ import de.vemaeg.common.db.model.Kunde;
 import de.vemaeg.common.db.model.Sitzung;
 import de.vemaeg.common.util.StringUtil;
 import de.vemaeg.pdf.IndiPdfCreator;
+import de.vemaeg.pdf.PdfCreator;
 import de.vemaeg.pdf.PdfException;
 
 public class IndiPdfServlet extends HttpServlet {
@@ -32,9 +41,11 @@ public class IndiPdfServlet extends HttpServlet {
 	private static class RequestData {
 		// input
 		public Integer pdfId = null;	
+		public List<Integer> pdfIds = null;
 		public Integer vorlId = null;	
 		public String kdCode = null;
 		public Object daten = null;
+		public List<Object> pdfDaten = null;
 		public String editor = null;
 	}
 
@@ -59,28 +70,50 @@ public class IndiPdfServlet extends HttpServlet {
 	    }
 	    
 	    Sitzung sitzung = this.getSitzung(request);   
-	    IndiPdfCreator creator = new IndiPdfCreator(sitzung);
-		
+	    IndiPdfCreator creator = new IndiPdfCreator(sitzung);		
 	    String baseUrl = request.getScheme() + "://" + request.getServerName();
-		if (data.pdfId != null) {			
-			try {
-				setRespHeaders(response, data);
-				creator.createPDF(response.getOutputStream(), data.pdfId, data.kdCode, data.daten, data.editor, baseUrl);
-			} catch (PdfException e) {
-				response.reset();
-				response.getWriter().print(e.getMessage());
+	    
+		try {
+			setRespHeaders(response, data);
+	    
+			if (data.pdfId != null) {
+				creator.createPDF(response.getOutputStream(), data.pdfId, data.kdCode, data.daten, data.editor, baseUrl);	
+				return;
 			}
-			return;
-		}
 		
-		if (data.vorlId != null) {
-			try {
-				setRespHeaders(response, data);				
+			if (data.vorlId != null) {		
 				creator.createVorlagenPDF(response.getOutputStream(), data.vorlId, data.kdCode, data.daten, baseUrl);
-			} catch (PdfException e) {
-				response.reset();
-				response.getWriter().print(e.getMessage());
+				return;
 			}
+			
+			if (data.pdfIds != null) {
+				List<InputStream> pdfs = new ArrayList<InputStream>();	
+							
+				int i = 0;
+				for(Integer pdfId : data.pdfIds) {
+					Object d = data.daten;
+					if (data.pdfDaten != null && data.pdfDaten.size() > i) {
+						d = data.pdfDaten.get(i);
+					}
+					
+					ByteArrayOutputStream out = new ByteArrayOutputStream();	
+					creator.createPDF(out, pdfId, data.kdCode, d, data.editor, baseUrl);
+					pdfs.add(new ByteArrayInputStream(out.toByteArray()));
+					++i;
+				}
+
+				PdfCreator.concatPDFs(pdfs, response.getOutputStream(), false);	
+				return;
+			}
+			
+			
+		} catch (PdfException e) {
+			response.reset();
+			response.getWriter().print(e.getMessage());
+			return;
+		} catch (DocumentException e) {
+			response.reset();
+			response.getWriter().print(e.getMessage());
 			return;
 		}
 		
@@ -115,6 +148,7 @@ public class IndiPdfServlet extends HttpServlet {
 	
 	private RequestData parseRequest(HttpServletRequest request) throws Exception {
 		RequestData data = new RequestData();	
+		ObjectMapper mapper = new ObjectMapper();
 		
 		String tmp = request.getParameter("pdfId");
 		if (tmp != null) {
@@ -130,10 +164,23 @@ public class IndiPdfServlet extends HttpServlet {
 		data.editor = request.getParameter("editor");
 		
 		tmp = request.getParameter("daten");
-		if (tmp != null && tmp.trim().length() > 0) {		    
-		    ObjectMapper mapper = new ObjectMapper();
+		if (tmp != null && tmp.trim().length() > 0) { 		    
             data.daten = mapper.readValue(tmp, Object.class);
 		}
+		
+		String[] tmpIds = request.getParameterValues("pdfIds");
+		if (tmpIds != null) {
+			data.pdfIds = new ArrayList<Integer>();
+			
+			for(String id : tmpIds) {
+				data.pdfIds.add(Integer.parseInt(id));
+			}
+		}
+		
+		tmp = request.getParameter("pdfDaten");
+		if (tmp != null && tmp.trim().length() > 0) {
+            data.pdfDaten = mapper.readValue(tmp, new TypeReference<List<Object>>(){});
+		}		
 		
 		return data;
 	}
