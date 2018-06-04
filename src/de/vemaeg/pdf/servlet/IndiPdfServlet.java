@@ -201,18 +201,24 @@ public class IndiPdfServlet extends HttpServlet {
 			HibernateUtil.closeSession(s);
 		}	
 		
-		SimpleDateFormat df = new SimpleDateFormat( "-yyyy-MM-dd" );
-		String filename = "Dok-"; // TODO: Bezeichnung?
-		if (kunde != null) {
-			filename += String.format("%s-%s",
-				kunde.getNachname(),
-				kunde.getVorname()				
-			);
-		}
-		filename += df.format(new Date());
+		SimpleDateFormat df = new SimpleDateFormat( "yyyy-MM-dd" );
 		
+		String kname = "";
+		if (kunde != null) {
+			// werfe Sonderzeichen aus Kundennamen
+			// Umlaute sollen erhalten bleiben (zählen als non-word char \W)
+			kname = String.format("%s-%s",
+					StringUtil.replaceUmlaute(kunde.getNachname())
+					.replaceAll("\\W", ""),
+					StringUtil.replaceUmlaute(kunde.getVorname())
+					.replaceAll("\\W", ""));
+		}
+		
+		String filename = String.format("Dok-%s-%s", 
+				df.format(new Date()),				
+				kname);
 		filename = StringUtil.replaceUmlaute(filename);
-		filename = filename.replace("\n", "").replace("\r", ""); 
+		filename = StringUtil.trimFull(filename);	
 		
 		return filename;
 	}
