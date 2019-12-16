@@ -17,15 +17,15 @@
 	</filter-mapping>
 
 	<filter>
-		<filter-name>AuthenticationFilter</filter-name>
-		<filter-class>de.vemaeg.common.auth.AuthenticationFilter</filter-class>
+		<filter-name>LoginFilter</filter-name>
+		<filter-class>de.vemaeg.login.service.LoginFilter</filter-class>
 		<init-param>
 			<param-name>dataProcessors</param-name>
-			<param-value>de.vemaeg.common.auth.AuthenticationDataProcessorSitzung</param-value>
+			<param-value>de.vemaeg.util.LoginDataProcessorSitzung</param-value>
 		</init-param>
 	</filter>
 	<filter-mapping>
-		<filter-name>AuthenticationFilter</filter-name>
+		<filter-name>LoginFilter</filter-name>
 		<url-pattern>/IndiPdfServlet</url-pattern>
 		<url-pattern>/MacroServlet</url-pattern>
 		<url-pattern>/PdfProducer</url-pattern>

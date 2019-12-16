@@ -22,7 +22,6 @@ import org.hibernate.Session;
 
 import com.itextpdf.text.DocumentException;
 
-import de.vemaeg.common.auth.AuthenticationDataProcessorSitzung;
 import de.vemaeg.common.db.dao.DAOFactory;
 import de.vemaeg.common.db.dao.HibernateUtil;
 import de.vemaeg.common.db.dao.KundeDAO;
@@ -32,6 +31,7 @@ import de.vemaeg.common.util.StringUtil;
 import de.vemaeg.pdf.IndiPdfCreator;
 import de.vemaeg.pdf.PdfCreator;
 import de.vemaeg.pdf.PdfException;
+import de.vemaeg.util.LoginDataProcessorSitzung;
 
 public class IndiPdfServlet extends HttpServlet {
 	
@@ -124,20 +124,11 @@ public class IndiPdfServlet extends HttpServlet {
 		HttpSession session = request.getSession();
 		if (session == null) {
 			return null;
-		}
-		
-		Object sitzungObj = session.getAttribute(AuthenticationDataProcessorSitzung.SESSION_KEY_SITZUNG);
-		if (sitzungObj == null) {
-			return null;
-		}
-		
-		if (! (sitzungObj instanceof Sitzung)) {
-			LOGGER.error("Invalid class in session, expected Sitzung: " + sitzungObj.getClass());
-			return null;
-		}
-		
-		return (Sitzung) sitzungObj;
+		}		
+
+		return LoginDataProcessorSitzung.getSitzungFromSession(session);
 	}
+	
 	
 	private void setRespHeaders(HttpServletResponse response, RequestData data) {
 	    response.setContentType("application/pdf");
