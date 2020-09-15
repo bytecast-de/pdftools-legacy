@@ -1,3 +1,6 @@
 # /
 /build
 /target
+/src/main/resources/application.properties
+/src/main/resources/hibernate.cfg.xml
+/src/main/resources/login.properties
