@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.apache.batik:org.apache.batik.transcoder:1.6.0-20081006">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/apache/batik/org.apache.batik.transcoder/1.6.0-20081006/org.apache.batik.transcoder-1.6.0-20081006.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/org/apache/batik/org.apache.batik.transcoder/1.6.0-20081006/org.apache.batik.transcoder-1.6.0-20081006-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/apache/batik/org.apache.batik.transcoder/1.6.0-20081006/org.apache.batik.transcoder-1.6.0-20081006-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
