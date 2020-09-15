@@ -40,12 +40,17 @@
         <dependency>
             <groupId>commons-configuration</groupId>
             <artifactId>commons-configuration</artifactId>
-            <version>1.10</version>
+            <version>1.6</version>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.apache.batik</groupId>-->
+<!--            <artifactId>org.apache.batik.transcoder</artifactId>-->
+<!--            <version>1.6.0-20081006</version>-->
+<!--        </dependency>-->
         <dependency>
-            <groupId>org.apache.batik</groupId>
-            <artifactId>org.apache.batik.transcoder</artifactId>
-            <version>1.6.0-20081006</version>
+            <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>batik-transcoder</artifactId>
+            <version>1.13</version>
         </dependency>
         <dependency>
             <groupId>de.vemaeg.login</groupId>
@@ -95,7 +100,7 @@
         <dependency>
             <groupId>net.sf.jtidy</groupId>
             <artifactId>jtidy</artifactId>
-            <version>r938</version>
+            <version>r918</version>
         </dependency>
         <dependency>
             <groupId>commons-httpclient</groupId>
@@ -197,11 +202,11 @@
                         <id>install-external4</id>
                         <phase>clean</phase>
                         <configuration>
-                            <file>lib/org.apache.batik.transcoder-1.6.0-20081006.jar</file>
+                            <file>lib/jtidy-r918.jar</file>
                             <repositoryLayout>default</repositoryLayout>
-                            <groupId>org.apache.batik</groupId>
-                            <artifactId>org.apache.batik.transcoder</artifactId>
-                            <version>1.6.0-20081006</version>
+                            <groupId>net.sf.jtidy</groupId>
+                            <artifactId>jtidy</artifactId>
+                            <version>r918</version>
                             <packaging>jar</packaging>
                             <generatePom>true</generatePom>
                         </configuration>
