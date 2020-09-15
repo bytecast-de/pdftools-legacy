@@ -1,8 +1,6 @@
 package de.vemaeg.pdf.svg;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 import org.xhtmlrenderer.extend.ReplacedElement;
 import org.xhtmlrenderer.extend.ReplacedElementFactory;
@@ -11,8 +9,12 @@ import org.xhtmlrenderer.layout.LayoutContext;
 import org.xhtmlrenderer.render.BlockBox;
 import org.xhtmlrenderer.simple.extend.FormSubmissionListener;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ChainingReplacedElementFactory implements ReplacedElementFactory {
-    private List<ReplacedElementFactory> replacedElementFactories = new ArrayList<>();
+
+    private final List<ReplacedElementFactory> replacedElementFactories = new ArrayList<>();
 
     public void addReplacedElementFactory(ReplacedElementFactory replacedElementFactory) {
         replacedElementFactories.add(0, replacedElementFactory);

@@ -24,6 +24,7 @@ import org.apache.commons.httpclient.cookie.CookiePolicy;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
 import org.w3c.tidy.Tidy;
+import org.xhtmlrenderer.extend.ReplacedElementFactory;
 import org.xhtmlrenderer.layout.SharedContext;
 import org.xhtmlrenderer.pdf.ITextFontResolver;
 import org.xhtmlrenderer.pdf.ITextRenderer;
@@ -197,7 +198,14 @@ public class PdfCreator {
         	LOGGER.debug("Loaded font: " + fontPath);
         }
 
-		ChainingReplacedElementFactory chainingReplacedElementFactory = new ChainingReplacedElementFactory();
+//		ChainingReplacedElementFactory chainingReplacedElementFactory = new ChainingReplacedElementFactory();
+//		chainingReplacedElementFactory.addReplacedElementFactory(new SVGReplacedElementFactory());
+//		renderer.getSharedContext().setReplacedElementFactory(chainingReplacedElementFactory);
+
+//		ReplacedElementFactory replacedElementFactory = renderer.getSharedContext().getReplacedElementFactory();
+		ChainingReplacedElementFactory chainingReplacedElementFactory
+				= new ChainingReplacedElementFactory();
+//		chainingReplacedElementFactory.addReplacedElementFactory(replacedElementFactory);
 		chainingReplacedElementFactory.addReplacedElementFactory(new SVGReplacedElementFactory());
 		renderer.getSharedContext().setReplacedElementFactory(chainingReplacedElementFactory);
 	}
@@ -494,37 +502,42 @@ public class PdfCreator {
         cb.lineTo(x + (float) 4.0, y + (float) 19.0);
         cb.stroke();
 	}
-	
-	private static String cleanupHTML(String input) {		
-		// FIXME: instanz nur einmal!
-		Tidy tidy = new Tidy();		
-		//tidy.setXmlOut(true);
-		
-		// xml-input?
-		tidy.setXmlTags(false);
-		
-		// word-mist raus
-		tidy.setWord2000(true);
-		
-		// output-config
-		tidy.setWraplen(0);		
-		tidy.setRawOut(true);
-		tidy.setXHTML(true);
-		tidy.setOutputEncoding("UTF-8");
-		
-		// error-config
-		tidy.setShowErrors(0);
-		tidy.setShowWarnings(false);		
-		tidy.setQuiet(true);		
-		
-		// Ergebnis immer ausgeben, auch bei HTML-Fehlern
-		tidy.setForceOutput(true);
-		
-		StringWriter out = new StringWriter(); 
-		tidy.parse(new StringReader(input), out);
-		
-		return out.toString();
+
+	private static String cleanupHTML(String input) {
+		return input;
 	}
+	
+//	private static String cleanupHTML(String input) {
+//
+//		// FIXME: instanz nur einmal!
+//		Tidy tidy = new Tidy();
+//		//tidy.setXmlOut(true);
+//
+//		// xml-input?
+//		tidy.setXmlTags(false);
+//
+//		// word-mist raus
+//		tidy.setWord2000(true);
+//
+//		// output-config
+//		tidy.setWraplen(0);
+//		tidy.setRawOut(true);
+//		tidy.setXHTML(true);
+//		tidy.setOutputEncoding("UTF-8");
+//
+//		// error-config
+//		tidy.setShowErrors(0);
+//		tidy.setShowWarnings(false);
+//		tidy.setQuiet(true);
+//
+//		// Ergebnis immer ausgeben, auch bei HTML-Fehlern
+//		tidy.setForceOutput(true);
+//
+//		StringWriter out = new StringWriter();
+//		tidy.parse(new StringReader(input), out);
+//
+//		return out.toString();
+//	}
 	
 	private static String cleanupWord(String str) {
 		List<String> sc = new ArrayList<String>();

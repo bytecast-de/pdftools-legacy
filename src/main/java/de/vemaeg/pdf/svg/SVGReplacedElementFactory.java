@@ -1,10 +1,7 @@
 package de.vemaeg.pdf.svg;
 
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xhtmlrenderer.extend.ReplacedElement;
@@ -14,11 +11,18 @@ import org.xhtmlrenderer.layout.LayoutContext;
 import org.xhtmlrenderer.render.BlockBox;
 import org.xhtmlrenderer.simple.extend.FormSubmissionListener;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 public class SVGReplacedElementFactory implements ReplacedElementFactory {
+
     @Override
     public ReplacedElement createReplacedElement(LayoutContext c, BlockBox box,
                                                  UserAgentCallback uac, int cssWidth, int cssHeight) {
+
         Element element = box.getElement();
+
         if ("svg".equals(element.getNodeName())) {
             DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder documentBuilder;

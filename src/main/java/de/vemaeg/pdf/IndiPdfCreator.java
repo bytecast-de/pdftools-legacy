@@ -239,7 +239,7 @@ public class IndiPdfCreator {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<html><head><style type=\"text/css\">");		
 		sb.append(vorlage.getCss());	
-		sb.append("</head><body>");
+		sb.append("</style></head><body>");
 		sb.append("#parse(\"" + FILENAME_MACROS + "\")");
 		sb.append(vorlage.getHtml());
 		sb.append("</body></html>");

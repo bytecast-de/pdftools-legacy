@@ -1,12 +1,10 @@
 package de.vemaeg.pdf.svg;
 
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.print.PageFormat;
-import java.awt.print.Paper;
-
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfTemplate;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.print.PrintTranscoder;
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.xhtmlrenderer.css.style.CalculatedStyle;
 import org.xhtmlrenderer.layout.LayoutContext;
@@ -16,8 +14,9 @@ import org.xhtmlrenderer.render.BlockBox;
 import org.xhtmlrenderer.render.PageBox;
 import org.xhtmlrenderer.render.RenderingContext;
 
-import com.itextpdf.text.pdf.PdfContentByte;
-import com.itextpdf.text.pdf.PdfTemplate;
+import java.awt.*;
+import java.awt.print.PageFormat;
+import java.awt.print.Paper;
 
 public class SVGReplacedElement implements ITextReplacedElement {
 
