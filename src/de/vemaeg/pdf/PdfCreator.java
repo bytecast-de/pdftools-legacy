@@ -15,6 +15,8 @@ import java.util.Map;
 
 import javax.servlet.ServletException;
 
+import de.vemaeg.pdf.svg.ChainingReplacedElementFactory;
+import de.vemaeg.pdf.svg.SVGReplacedElementFactory;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
@@ -54,8 +56,8 @@ public class PdfCreator {
 	public static void createFromInternalUri(OutputStream output, String uri, String UIN) throws IOException, DocumentException, ServletException {  
 		// init
         ITextRenderer renderer = new ITextRenderer();
-		initFonts(renderer);
-		
+		initRenderer(renderer);
+
 		// eigener user agent
 		SharedContext sc = renderer.getSharedContext();		
 		SessionAwareUserAgent userAgent = new SessionAwareUserAgent(renderer.getOutputDevice(), uri, UIN);
@@ -132,7 +134,7 @@ public class PdfCreator {
 	// erzeugt pdf aus HTML-vorlage / fertig gerendertem content (oben wird content erst noch ausgelesen) 
 	public static void create(OutputStream output, String content, String basepath) throws DocumentException, IOException {
         ITextRenderer renderer = new ITextRenderer();
-		initFonts(renderer);
+		initRenderer(renderer);
 		
 		// eigener user agent
 		SharedContext sc = renderer.getSharedContext();
@@ -170,7 +172,7 @@ public class PdfCreator {
         output.close();
 	}
 	
-	private static void initFonts(ITextRenderer renderer) {		
+	private static void initRenderer(ITextRenderer renderer) {
         ITextFontResolver resolver = renderer.getFontResolver();
         
         for(int i = 0; i < FONTLIST.length; ++i) {
@@ -194,6 +196,10 @@ public class PdfCreator {
         	
         	LOGGER.debug("Loaded font: " + fontPath);
         }
+
+		ChainingReplacedElementFactory chainingReplacedElementFactory = new ChainingReplacedElementFactory();
+		chainingReplacedElementFactory.addReplacedElementFactory(new SVGReplacedElementFactory());
+		renderer.getSharedContext().setReplacedElementFactory(chainingReplacedElementFactory);
 	}
 	
 	/*
