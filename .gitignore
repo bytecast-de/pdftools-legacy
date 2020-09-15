@@ -1,5 +1,3 @@
 # /
 /build
-src/application.properties
-src/hibernate.cfg.xml
-src/login.properties
+/target
