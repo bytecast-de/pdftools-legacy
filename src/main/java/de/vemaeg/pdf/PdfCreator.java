@@ -497,7 +497,6 @@ public class PdfCreator {
 	}
 
 	private static String cleanupHTML(String input) {
-
 		// FIXME: instanz nur einmal!
 		Tidy tidy = new Tidy();
 		//tidy.setXmlOut(true);
@@ -515,9 +514,9 @@ public class PdfCreator {
 		tidy.setOutputEncoding("UTF-8");
 
 		// error-config
-		tidy.setShowErrors(1);
-		tidy.setShowWarnings(true);
-		tidy.setQuiet(false);
+		tidy.setShowErrors(0);
+		tidy.setShowWarnings(false);
+		tidy.setQuiet(true);
 
 		// Ergebnis immer ausgeben, auch bei HTML-Fehlern
 		tidy.setForceOutput(true);
