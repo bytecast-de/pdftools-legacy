@@ -62,8 +62,6 @@ public class SVGReplacedElementFactory implements ReplacedElementFactory {
 
         replacedElement.setWidth(width);
         replacedElement.setHeight(height);
-
-        System.err.println("READ element done: w " + width + " - h " + height);
     }
 
     private boolean isSVGEmbedded(Element element) {

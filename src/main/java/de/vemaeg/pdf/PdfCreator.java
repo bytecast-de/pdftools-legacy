@@ -497,53 +497,45 @@ public class PdfCreator {
 	}
 
 	private static String cleanupHTML(String input) {
-		return input;
+
+		// FIXME: instanz nur einmal!
+		Tidy tidy = new Tidy();
+		//tidy.setXmlOut(true);
+
+		StringWriter out3 = new StringWriter();
+
+		Properties p = new Properties();
+		p.setProperty("new-pre-tags", "svg circle");
+		tidy.getConfiguration().addProps(p);
+
+		tidy.getConfiguration().printConfigOptions(out3, true);
+		LOGGER.debug("output config: " + out3.toString());
+
+		// xml-input?
+		tidy.setXmlTags(false);
+
+		// word-mist raus
+		tidy.setWord2000(true);
+
+		// output-config
+		tidy.setWraplen(0);
+		tidy.setRawOut(true);
+		tidy.setXHTML(true);
+		tidy.setOutputEncoding("UTF-8");
+
+		// error-config
+		tidy.setShowErrors(1);
+		tidy.setShowWarnings(true);
+		tidy.setQuiet(false);
+
+		// Ergebnis immer ausgeben, auch bei HTML-Fehlern
+		tidy.setForceOutput(true);
+
+		StringWriter out = new StringWriter();
+		tidy.parse(new StringReader(input), out);
+
+		return out.toString();
 	}
-	
-//	private static String cleanupHTML(String input) {
-//
-//		LOGGER.debug("input tidy: " + input);
-//
-//		// FIXME: instanz nur einmal!
-//		Tidy tidy = new Tidy();
-//		//tidy.setXmlOut(true);
-//
-//		StringWriter out3 = new StringWriter();
-//
-//		Properties p = new Properties();
-//		p.setProperty("new-pre-tags", "svg circle");
-//		tidy.getConfiguration().addProps(p);
-//
-//		tidy.getConfiguration().printConfigOptions(out3, true);
-//		LOGGER.debug("output config: " + out3.toString());
-//
-//		// xml-input?
-//		tidy.setXmlTags(false);
-//
-//		// word-mist raus
-//		tidy.setWord2000(true);
-//
-//		// output-config
-//		tidy.setWraplen(0);
-//		tidy.setRawOut(true);
-//		tidy.setXHTML(true);
-//		tidy.setOutputEncoding("UTF-8");
-//
-//		// error-config
-//		tidy.setShowErrors(1);
-//		tidy.setShowWarnings(true);
-//		tidy.setQuiet(false);
-//
-//		// Ergebnis immer ausgeben, auch bei HTML-Fehlern
-//		tidy.setForceOutput(true);
-//
-//		StringWriter out = new StringWriter();
-//		tidy.parse(new StringReader(input), out);
-//
-//		LOGGER.debug("output tidy: " + out.toString());
-//
-//		return out.toString();
-//	}
 	
 	private static String cleanupWord(String str) {
 		List<String> sc = new ArrayList<String>();

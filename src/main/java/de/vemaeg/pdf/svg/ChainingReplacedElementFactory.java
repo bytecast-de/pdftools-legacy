@@ -29,6 +29,7 @@ public class ChainingReplacedElementFactory implements ReplacedElementFactory {
                 return element;
             }
         }
+
         return null;
     }
 
