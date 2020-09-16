@@ -8,10 +8,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.servlet.ServletException;
 
@@ -198,14 +195,10 @@ public class PdfCreator {
         	LOGGER.debug("Loaded font: " + fontPath);
         }
 
-//		ChainingReplacedElementFactory chainingReplacedElementFactory = new ChainingReplacedElementFactory();
-//		chainingReplacedElementFactory.addReplacedElementFactory(new SVGReplacedElementFactory());
-//		renderer.getSharedContext().setReplacedElementFactory(chainingReplacedElementFactory);
-
-//		ReplacedElementFactory replacedElementFactory = renderer.getSharedContext().getReplacedElementFactory();
+		ReplacedElementFactory replacedElementFactory = renderer.getSharedContext().getReplacedElementFactory();
 		ChainingReplacedElementFactory chainingReplacedElementFactory
 				= new ChainingReplacedElementFactory();
-//		chainingReplacedElementFactory.addReplacedElementFactory(replacedElementFactory);
+		chainingReplacedElementFactory.addReplacedElementFactory(replacedElementFactory);
 		chainingReplacedElementFactory.addReplacedElementFactory(new SVGReplacedElementFactory());
 		renderer.getSharedContext().setReplacedElementFactory(chainingReplacedElementFactory);
 	}
@@ -509,9 +502,20 @@ public class PdfCreator {
 	
 //	private static String cleanupHTML(String input) {
 //
+//		LOGGER.debug("input tidy: " + input);
+//
 //		// FIXME: instanz nur einmal!
 //		Tidy tidy = new Tidy();
 //		//tidy.setXmlOut(true);
+//
+//		StringWriter out3 = new StringWriter();
+//
+//		Properties p = new Properties();
+//		p.setProperty("new-pre-tags", "svg circle");
+//		tidy.getConfiguration().addProps(p);
+//
+//		tidy.getConfiguration().printConfigOptions(out3, true);
+//		LOGGER.debug("output config: " + out3.toString());
 //
 //		// xml-input?
 //		tidy.setXmlTags(false);
@@ -526,15 +530,17 @@ public class PdfCreator {
 //		tidy.setOutputEncoding("UTF-8");
 //
 //		// error-config
-//		tidy.setShowErrors(0);
-//		tidy.setShowWarnings(false);
-//		tidy.setQuiet(true);
+//		tidy.setShowErrors(1);
+//		tidy.setShowWarnings(true);
+//		tidy.setQuiet(false);
 //
 //		// Ergebnis immer ausgeben, auch bei HTML-Fehlern
 //		tidy.setForceOutput(true);
 //
 //		StringWriter out = new StringWriter();
 //		tidy.parse(new StringReader(input), out);
+//
+//		LOGGER.debug("output tidy: " + out.toString());
 //
 //		return out.toString();
 //	}

@@ -1,7 +1,6 @@
 package de.vemaeg.pdf.svg;
 
 
-import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xhtmlrenderer.extend.ReplacedElement;
@@ -11,10 +10,6 @@ import org.xhtmlrenderer.layout.LayoutContext;
 import org.xhtmlrenderer.render.BlockBox;
 import org.xhtmlrenderer.simple.extend.FormSubmissionListener;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 public class SVGReplacedElementFactory implements ReplacedElementFactory {
 
     @Override
@@ -23,23 +18,50 @@ public class SVGReplacedElementFactory implements ReplacedElementFactory {
 
         Element element = box.getElement();
 
-        if ("svg".equals(element.getNodeName())) {
-            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder documentBuilder;
+        int width = 0;
+        int height = 0;
 
-            try {
-                documentBuilder = documentBuilderFactory.newDocumentBuilder();
-            } catch (ParserConfigurationException e) {
-                throw new RuntimeException(e);
-            }
-
-            Document svgDocument = documentBuilder.newDocument();
-            Element svgElement = (Element) svgDocument.importNode(element, true);
-            svgDocument.appendChild(svgElement);
-
-            return new SVGReplacedElement(svgDocument, cssWidth, cssHeight);
+        if ( cssWidth > 0 ) {
+            width = cssWidth;
         }
-        return null;
+        if ( cssHeight > 0 ) {
+            height = cssHeight;
+        }
+
+        String val = element.getAttribute("width");
+        if ( val != null && val.length() > 0 ) {
+            width = Integer.parseInt(val);
+        }
+        val = element.getAttribute("height");
+        if ( val != null && val.length() > 0 ) {
+            height = Integer.parseInt(val);
+        }
+
+        SVGElementReader elementReader;
+        if ("svg".equals(element.getNodeName())) {
+            elementReader = new SVGInlineReader();
+        } else if (isSVGEmbedded(element)) {
+            elementReader = new SVGObjectReader();
+        } else {
+            return null;
+        }
+
+        Document svgDocument;
+        try {
+            svgDocument = elementReader.execute(element);
+        } catch (SVGException e) {
+            // TODO: logging
+            e.printStackTrace();
+            return null;
+        }
+
+        System.err.println("READ element done: " + width + " - " + height);
+
+        return new SVGReplacedElement(svgDocument, width, height);
+    }
+
+    private boolean isSVGEmbedded(Element element) {
+        return element.getNodeName().equals("object") && element.getAttribute("type").equals("image/svg+xml");
     }
 
     @Override
