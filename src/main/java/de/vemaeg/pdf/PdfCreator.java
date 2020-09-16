@@ -502,15 +502,6 @@ public class PdfCreator {
 		Tidy tidy = new Tidy();
 		//tidy.setXmlOut(true);
 
-		StringWriter out3 = new StringWriter();
-
-		Properties p = new Properties();
-		p.setProperty("new-pre-tags", "svg circle");
-		tidy.getConfiguration().addProps(p);
-
-		tidy.getConfiguration().printConfigOptions(out3, true);
-		LOGGER.debug("output config: " + out3.toString());
-
 		// xml-input?
 		tidy.setXmlTags(false);
 
