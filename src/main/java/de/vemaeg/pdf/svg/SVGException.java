@@ -1,7 +1,5 @@
 package de.vemaeg.pdf.svg;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 public class SVGException extends Exception {
 
     public SVGException() {

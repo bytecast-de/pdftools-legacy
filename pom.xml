@@ -16,6 +16,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
             <version>2.5</version>
@@ -42,11 +48,6 @@
             <artifactId>commons-configuration</artifactId>
             <version>1.6</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.apache.batik</groupId>-->
-<!--            <artifactId>org.apache.batik.transcoder</artifactId>-->
-<!--            <version>1.6.0-20081006</version>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>batik-transcoder</artifactId>

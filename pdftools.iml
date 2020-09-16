@@ -21,6 +21,8 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="jdk" jdkName="OpenJDK14" jdkType="JavaSDK" />
     <orderEntry type="library" name="lib" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: junit:junit:4.13" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.hamcrest:hamcrest-core:1.3" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: javax.servlet:servlet-api:2.5" level="project" />
     <orderEntry type="library" name="Maven: org.xhtmlrenderer:flying-saucer-core:9.0.8-vema" level="project" />
     <orderEntry type="library" name="Maven: org.xhtmlrenderer:flying-saucer-pdf-itext5:9.0.8-vema" level="project" />

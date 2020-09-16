@@ -1,6 +1,5 @@
 package de.vemaeg.pdf.svg;
 
-import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 import org.xhtmlrenderer.extend.ReplacedElement;
 import org.xhtmlrenderer.extend.ReplacedElementFactory;

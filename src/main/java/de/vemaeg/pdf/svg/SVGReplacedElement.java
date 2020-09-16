@@ -16,18 +16,29 @@ import org.xhtmlrenderer.render.RenderingContext;
 import java.awt.*;
 import java.awt.print.PageFormat;
 import java.awt.print.Paper;
+import java.io.InputStream;
 
 public class SVGReplacedElement implements ITextReplacedElement {
 
     private final Point location = new Point(0, 0);
-    private final Document svg;
-    private final int cssWidth;
-    private final int cssHeight;
+    private final TranscoderInput ti;
+    private int width = 0;
+    private int height = 0;
 
-    public SVGReplacedElement(Document svg, int cssWidth, int cssHeight) {
-        this.cssWidth = cssWidth;
-        this.cssHeight = cssHeight;
-        this.svg = svg;
+    public SVGReplacedElement(Document svg) {
+        this.ti = new TranscoderInput(svg);
+    }
+
+    public SVGReplacedElement(InputStream is) {
+        this.ti = new TranscoderInput(is);
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
     }
 
     @Override
@@ -41,12 +52,12 @@ public class SVGReplacedElement implements ITextReplacedElement {
 
     @Override
     public int getIntrinsicWidth() {
-        return cssWidth;
+        return width;
     }
 
     @Override
     public int getIntrinsicHeight() {
-        return cssHeight;
+        return height;
     }
 
     @Override
@@ -74,13 +85,13 @@ public class SVGReplacedElement implements ITextReplacedElement {
     public void paint(RenderingContext renderingContext, ITextOutputDevice outputDevice,
                       BlockBox blockBox) {
         PdfContentByte cb = outputDevice.getWriter().getDirectContent();
-        float width = (float) (cssWidth / outputDevice.getDotsPerPoint());
-        float height = (float) (cssHeight / outputDevice.getDotsPerPoint());
+        float width = this.width / outputDevice.getDotsPerPoint();
+        float height = this.height / outputDevice.getDotsPerPoint();
 
         PdfTemplate template = cb.createTemplate(width, height);
+        @SuppressWarnings("deprecation")
         Graphics2D g2d = template.createGraphics(width, height);
         PrintTranscoder prm = new PrintTranscoder();
-        TranscoderInput ti = new TranscoderInput(svg);
         prm.transcode(ti, null);
 
         PageFormat pg = new PageFormat();
@@ -93,7 +104,7 @@ public class SVGReplacedElement implements ITextReplacedElement {
 
         PageBox page = renderingContext.getPage();
         float x = blockBox.getAbsX() + page.getMarginBorderPadding(renderingContext, CalculatedStyle.LEFT);
-        float y = (page.getBottom() - (blockBox.getAbsY() + cssHeight)) + page.getMarginBorderPadding(
+        float y = (page.getBottom() - (blockBox.getAbsY() + this.height)) + page.getMarginBorderPadding(
                 renderingContext, CalculatedStyle.BOTTOM);
         x /= outputDevice.getDotsPerPoint();
         y /= outputDevice.getDotsPerPoint();

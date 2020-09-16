@@ -1,7 +1,6 @@
 package de.vemaeg.pdf.svg;
 
 
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xhtmlrenderer.extend.ReplacedElement;
 import org.xhtmlrenderer.extend.ReplacedElementFactory;
@@ -18,25 +17,6 @@ public class SVGReplacedElementFactory implements ReplacedElementFactory {
 
         Element element = box.getElement();
 
-        int width = 0;
-        int height = 0;
-
-        if ( cssWidth > 0 ) {
-            width = cssWidth;
-        }
-        if ( cssHeight > 0 ) {
-            height = cssHeight;
-        }
-
-        String val = element.getAttribute("width");
-        if ( val != null && val.length() > 0 ) {
-            width = Integer.parseInt(val);
-        }
-        val = element.getAttribute("height");
-        if ( val != null && val.length() > 0 ) {
-            height = Integer.parseInt(val);
-        }
-
         SVGElementReader elementReader;
         if ("svg".equals(element.getNodeName())) {
             elementReader = new SVGInlineReader();
@@ -46,18 +26,44 @@ public class SVGReplacedElementFactory implements ReplacedElementFactory {
             return null;
         }
 
-        Document svgDocument;
+        SVGReplacedElement replacedElement;
         try {
-            svgDocument = elementReader.execute(element);
+            replacedElement = elementReader.execute(element);
         } catch (SVGException e) {
             // TODO: logging
             e.printStackTrace();
             return null;
         }
 
-        System.err.println("READ element done: " + width + " - " + height);
+        applyDimensions(element, replacedElement, cssWidth, cssHeight);
 
-        return new SVGReplacedElement(svgDocument, width, height);
+        return replacedElement;
+    }
+
+    private void applyDimensions(Element element, SVGReplacedElement replacedElement, int cssWidth, int cssHeight) {
+        int width = 0;
+        int height = 0;
+
+        if (cssWidth > 0) {
+            width = cssWidth;
+        }
+        if (cssHeight > 0) {
+            height = cssHeight;
+        }
+
+        String val = element.getAttribute("width");
+        if (val != null && val.length() > 0) {
+            width = Integer.parseInt(val);
+        }
+        val = element.getAttribute("height");
+        if (val != null && val.length() > 0) {
+            height = Integer.parseInt(val);
+        }
+
+        replacedElement.setWidth(width);
+        replacedElement.setHeight(height);
+
+        System.err.println("READ element done: w " + width + " - h " + height);
     }
 
     private boolean isSVGEmbedded(Element element) {

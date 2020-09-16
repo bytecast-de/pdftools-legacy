@@ -10,7 +10,7 @@ import javax.xml.parsers.ParserConfigurationException;
 public class SVGInlineReader implements SVGElementReader {
 
     @Override
-    public Document execute(Element element) throws SVGException {
+    public SVGReplacedElement execute(Element element) throws SVGException {
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder documentBuilder;
 
@@ -24,6 +24,6 @@ public class SVGInlineReader implements SVGElementReader {
         Element svgElement = (Element) svgDocument.importNode(element, true);
         svgDocument.appendChild(svgElement);
 
-        return svgDocument;
+        return new SVGReplacedElement(svgDocument);
     }
 }
