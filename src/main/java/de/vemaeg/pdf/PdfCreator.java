@@ -49,7 +49,12 @@ public class PdfCreator {
 	private static final Logger LOGGER = Logger.getLogger(PdfCreator.class);
 	
 	private static final String DIRNAME_FONTS = GlobalConfig.getInstance().getString("dirname.fonts");
-	private static final String[] FONTLIST = GlobalConfig.getInstance().getStringArray("fontlist");	
+	private static final String[] FONTLIST = GlobalConfig.getInstance().getStringArray("fontlist");
+
+	static {
+		// Default page-size A4 - nicht letter
+		Locale.setDefault(new Locale("de", "DE"));
+	}
 	
 	public static void createFromInternalUri(OutputStream output, String uri, String UIN) throws IOException, DocumentException, ServletException {  
 		// init
