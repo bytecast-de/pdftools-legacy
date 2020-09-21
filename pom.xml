@@ -129,7 +129,8 @@
                 <version>3.3.1</version>
                 <configuration>
                     <failOnMissingWebXml>true</failOnMissingWebXml>
-                    <webappDirectory>../../devenv/pdftool/webapps/pdftools</webappDirectory>
+<!--                    <webappDirectory>../../devenv/pdftool/webapps/pdftools</webappDirectory>-->
+                    <webappDirectory>../../deploy/tomcat/pdftools</webappDirectory>
                 </configuration>
             </plugin>
             <plugin>
@@ -140,7 +141,8 @@
                     <followSymLinks>false</followSymLinks>
                     <filesets>
                         <fileset>
-                            <directory>../../devenv/pdftool/webapps/pdftools</directory>
+<!--                            <directory>../../devenv/pdftool/webapps/pdftools</directory>-->
+                            <directory>../../deploy/tomcat/pdftools</directory>
                         </fileset>
                     </filesets>
                 </configuration>
