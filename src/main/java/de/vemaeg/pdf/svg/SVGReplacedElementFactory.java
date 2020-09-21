@@ -1,6 +1,7 @@
 package de.vemaeg.pdf.svg;
 
 
+import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 import org.xhtmlrenderer.extend.ReplacedElement;
 import org.xhtmlrenderer.extend.ReplacedElementFactory;
@@ -10,6 +11,8 @@ import org.xhtmlrenderer.render.BlockBox;
 import org.xhtmlrenderer.simple.extend.FormSubmissionListener;
 
 public class SVGReplacedElementFactory implements ReplacedElementFactory {
+
+    private static final Logger LOGGER = Logger.getLogger(SVGReplacedElementFactory.class);
 
     @Override
     public ReplacedElement createReplacedElement(LayoutContext c, BlockBox box,
@@ -30,8 +33,7 @@ public class SVGReplacedElementFactory implements ReplacedElementFactory {
         try {
             replacedElement = elementReader.execute(element);
         } catch (SVGException e) {
-            // TODO: logging
-            e.printStackTrace();
+            LOGGER.error("Failed to create replacedElement.", e);
             return null;
         }
 
