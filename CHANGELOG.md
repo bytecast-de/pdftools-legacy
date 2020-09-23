@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1
+
+* Bugfix: Durch fehlende Dependency konnten inline base64 images nicht erzeugt werden.
+
 ## 1.1.0
 
 * Neu: Umstellung auf maven-Projektstruktur / maven-build

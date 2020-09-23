@@ -3,8 +3,11 @@ package de.vemaeg.test.pdf;
 import com.itextpdf.text.DocumentException;
 import de.vemaeg.pdf.svg.ChainingReplacedElementFactory;
 import de.vemaeg.pdf.svg.SVGReplacedElementFactory;
+import de.vemaeg.pdf.ua.BasepathUserAgent;
+import de.vemaeg.pdf.ua.ITextUserAgentWithCache;
 import org.junit.Test;
 import org.xhtmlrenderer.extend.ReplacedElementFactory;
+import org.xhtmlrenderer.layout.SharedContext;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import java.io.File;
@@ -22,8 +25,18 @@ public class TestSvgPdf {
     }
 
     @Test
+    public void testLandingpage() throws IOException {
+        create("/svg/landingpage.html", "/var/tmp/test-landingpage.pdf");
+    }
+
+    @Test
     public void testExtended() throws IOException {
         create("/svg/svg.xhtml", "/var/tmp/test-extended.pdf");
+    }
+
+    @Test
+    public void testBase64() throws IOException {
+        create("/svg/base64.html", "/var/tmp/test-base64.pdf");
     }
 
     private void create(final String fileName, final String outputFilename) throws IOException {
@@ -36,6 +49,12 @@ public class TestSvgPdf {
         chainingReplacedElementFactory.addReplacedElementFactory(replacedElementFactory);
         chainingReplacedElementFactory.addReplacedElementFactory(new SVGReplacedElementFactory());
         renderer.getSharedContext().setReplacedElementFactory(chainingReplacedElementFactory);
+
+        // eigener user agent
+        SharedContext sc = renderer.getSharedContext();
+        ITextUserAgentWithCache userAgent = new ITextUserAgentWithCache(renderer.getOutputDevice());
+        sc.setUserAgentCallback(userAgent);
+        userAgent.setSharedContext(sc);
 
         // read file
         URL url = TestSvgPdf.class.getResource(fileName);
