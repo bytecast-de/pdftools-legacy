@@ -21,16 +21,18 @@ import java.io.InputStream;
 public class SVGReplacedElement implements ITextReplacedElement {
 
     private final Point location = new Point(0, 0);
-    private final TranscoderInput ti;
+    private final PrintTranscoder transcoder = new PrintTranscoder();
     private int width = 0;
     private int height = 0;
 
     public SVGReplacedElement(Document svg) {
-        this.ti = new TranscoderInput(svg);
+        TranscoderInput ti = new TranscoderInput(svg);
+        this.transcoder.transcode(ti, null);
     }
 
     public SVGReplacedElement(InputStream is) {
-        this.ti = new TranscoderInput(is);
+        TranscoderInput ti = new TranscoderInput(is);
+        this.transcoder.transcode(ti, null);
     }
 
     public void setWidth(int width) {
@@ -91,15 +93,13 @@ public class SVGReplacedElement implements ITextReplacedElement {
         PdfTemplate template = cb.createTemplate(width, height);
         @SuppressWarnings("deprecation")
         Graphics2D g2d = template.createGraphics(width, height);
-        PrintTranscoder prm = new PrintTranscoder();
-        prm.transcode(ti, null);
 
         PageFormat pg = new PageFormat();
         Paper pp = new Paper();
         pp.setSize(width, height);
         pp.setImageableArea(0, 0, width, height);
         pg.setPaper(pp);
-        prm.print(g2d, pg, 0);
+        this.transcoder.print(g2d, pg, 0);
         g2d.dispose();
 
         PageBox page = renderingContext.getPage();

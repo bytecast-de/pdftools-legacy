@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.2
+
+* Bugfix: Fehler "stream is closed" bei SVG-Druck: URL nur einmalig transcodieren, da "paint" öfter gecalled werden kann (z.B. overlay) 
+
 ## 1.1.1
 
 * Bugfix: Durch fehlende Dependency konnten inline base64 images nicht erzeugt werden.
