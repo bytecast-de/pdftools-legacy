@@ -5,7 +5,7 @@
 
     <groupId>de.vemaeg.pdf</groupId>
     <artifactId>vema-pdf-legacy</artifactId>
-    <version>1.1.1-SNAPSHOT</version>
+    <version>1.1.2-SNAPSHOT</version>
     <packaging>war</packaging>
     <name>vema-pdf-legacy</name>
     <url>http://maven.apache.org</url>
@@ -134,8 +134,8 @@
                 <version>3.3.1</version>
                 <configuration>
                     <failOnMissingWebXml>true</failOnMissingWebXml>
-<!--                    <webappDirectory>../../devenv/pdftool/webapps/pdftools</webappDirectory>-->
-                    <webappDirectory>../../deploy/tomcat/pdftools</webappDirectory>
+                    <webappDirectory>../../devenv/pdftool/webapps/pdftools</webappDirectory>
+<!--                    <webappDirectory>../../deploy/tomcat/pdftools</webappDirectory>-->
                 </configuration>
             </plugin>
             <plugin>
@@ -146,8 +146,8 @@
                     <followSymLinks>false</followSymLinks>
                     <filesets>
                         <fileset>
-<!--                            <directory>../../devenv/pdftool/webapps/pdftools</directory>-->
-                            <directory>../../deploy/tomcat/pdftools</directory>
+                            <directory>../../devenv/pdftool/webapps/pdftools</directory>
+<!--                            <directory>../../deploy/tomcat/pdftools</directory>-->
                         </fileset>
                     </filesets>
                 </configuration>
